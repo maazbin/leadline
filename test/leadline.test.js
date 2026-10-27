@@ -308,6 +308,8 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(await savedPage.text(), /Harbor Studio/);
     const desk = await (await fetch(`${origin}/`)).text();
     assert.match(desk, /Open the crew/);
+    assert.match(desk, /class="crew-map"/);
+    assert.match(desk, /class="door"/);
     assert.match(desk, /href="\/crew"/);
     assert.match(desk, /href="\/plan"/);
     assert.match(desk, /href="\/persona"/);
