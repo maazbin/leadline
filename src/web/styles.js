@@ -181,6 +181,29 @@ pre.preview {
 .meter { display: grid; grid-template-columns: 90px 1fr 36px; gap: 8px; align-items: center; margin: 8px 0; }
 .meter-track { height: 8px; background: var(--card-2); border-radius: 999px; overflow: hidden; }
 .meter-track span { display: block; height: 100%; background: var(--reach); border-radius: 999px; }
+.crew-map { width: 100%; height: auto; display: block; background: var(--card); border: 1px solid var(--line); border-radius: 18px; margin: 16px 0; }
+.crew-map .edge { stroke: #4a5340; stroke-width: 1.5; }
+.crew-map .edge.day { stroke: var(--muted); stroke-width: 2.5; }
+.crew-map .edge.hub { stroke: #6d6758; stroke-dasharray: 5 4; }
+.crew-map a { cursor: pointer; }
+.crew-map .node { fill: #23281e; stroke: var(--line); stroke-width: 1.5; }
+.crew-map a:hover .node, .crew-map a:focus .node { stroke: var(--text); }
+.crew-map .node.working { stroke: var(--good); }
+.crew-map .node.waiting { stroke: var(--reach); }
+.crew-map .node.stuck { stroke: var(--bad); }
+.crew-map .node.off, .crew-map .node.paused { stroke: #5c574c; }
+.crew-map .node.you, .crew-map .node.master { stroke: var(--kernel); }
+.crew-map .node.master { stroke: var(--reach); }
+.crew-map text { fill: var(--text); font-size: 15px; font-family: Georgia, "Iowan Old Style", serif; }
+.crew-map .sub { fill: var(--muted); font-size: 11px; font-family: "Segoe UI", sans-serif; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 0 0 16px; font-size: 13px; }
+.legend .working { color: var(--good); }
+.legend .waiting { color: var(--reach); }
+.legend .stuck { color: var(--bad); }
+.legend .off, .legend .paused { color: var(--muted); }
+.activity-path { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; list-style: none; padding: 0; margin: 0; }
+.activity-path li { background: var(--card-2); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; font-size: 13px; line-height: 1.35; max-width: 36ch; }
+.activity-path li.arrow { background: transparent; border: 0; color: var(--muted); padding: 0 2px; }
 @media (max-width: 980px) {
   .app { grid-template-columns: 1fr; }
   .rail { border-right: 0; border-bottom: 1px solid var(--line); }

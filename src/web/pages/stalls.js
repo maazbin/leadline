@@ -1,4 +1,4 @@
-// src/web/pages/stalls.js — the open Trace lines, shared by Today and Agents.
+// src/web/pages/stalls.js — the open Trace lines, shared by Crew and Tracking.
 //
 // Owns: the "Where it stuck" card.
 // Must not: clear a stall or send.

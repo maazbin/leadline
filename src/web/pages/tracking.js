@@ -49,7 +49,7 @@ export function trackingPage(query) {
           <td>${row.step ? esc(row.step) : '<span class="muted">No open step</span>'}</td>
         </tr>`).join('')}</tbody>
       </table>
-      <p class="muted">Leads: ${esc(leadLine)}. <a href="/crew">Open Agents</a> for the lane check.</p>
+      <p class="muted">Leads: ${esc(leadLine)}. <a href="/crew">Open the crew</a> for the lane graph.</p>
     </section>
     <section class="card">
       <h2>Activity</h2>

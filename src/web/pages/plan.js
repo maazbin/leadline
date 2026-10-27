@@ -3,8 +3,9 @@
 // Owns: /plan and the plan form.
 // Must not: send or start a campaign.
 // Writes: the plan for today, when the person saves the form.
-// Reads: the plan.
+// Reads: the plan, and the short list of what to do.
 
+import { recommendations } from '../../kernel/brief.js';
 import { getPlan, localDay, saveDayPlan } from '../../kernel/plan.js';
 import { esc } from '../../kernel/text.js';
 import { redirect } from '../http.js';
@@ -23,6 +24,10 @@ export function planPage(query) {
         <label class="plan-remove"><input type="checkbox" name="remove" value="${esc(item.id)}"><span>Remove</span></label>
       </div>`).join('')
     : '<p class="muted">Nothing planned yet.</p>';
+  const recs = recommendations();
+  const advice = recs.length
+    ? `<section class="card"><h2>What to do</h2><ul class="recs">${recs.map((item) => `<li class="rec ${esc(item.tone)}"><a href="${esc(item.href)}">${esc(item.text)}</a></li>`).join('')}</ul></section>`
+    : '';
   const body = `
     ${flash(query)}
     <form method="post" action="/desk/plan" class="card">
@@ -32,7 +37,8 @@ export function planPage(query) {
       ${lines}
       <label class="field"><span>Add a line</span><textarea name="new_body" rows="2"></textarea></label>
       <button type="submit">Save plan</button>
-    </form>`;
+    </form>
+    ${advice}`;
   return shell({ team: 'kernel', title: 'Plan', kicker: 'Desk', nav: 'Plan', body });
 }
 

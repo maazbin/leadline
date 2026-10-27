@@ -10,26 +10,10 @@ import { esc } from '../kernel/text.js';
 import { ERRORS, OKS, STEPS } from './copy.js';
 import { CSS } from './styles.js';
 
-const DESK = [
+const RAIL = [
   ['/', 'Today', 'kernel'],
-  ['/plan', 'Plan', 'kernel'],
-  ['/questions', 'Questions', 'kernel'],
-  ['/persona', 'Persona', 'kernel'],
-  ['/trends', 'Trends', 'kernel'],
-  ['/results', 'Results', 'kernel'],
-  ['/tracking', 'Tracking', 'kernel'],
-  ['/crew', 'Agents', 'kernel'],
-];
-
-const WORK = [
-  ['/setup', 'Understand', 'understand'],
-  ['/discover', 'Discover', 'discover'],
-  ['/reach', 'Reach', 'reach'],
-  ['/create', 'Create', 'create'],
-  ['/gtm', 'GTM', 'gtm'],
+  ['/crew', 'Crew', 'kernel'],
   ['/settings', 'Settings', 'kernel'],
-  ['/browser', 'Browser', 'kernel'],
-  ['/learn', 'Memory', 'kernel'],
 ];
 
 /**
@@ -98,11 +82,8 @@ export function shell(page) {
   <div class="app">
     <aside class="rail">
       <div class="brand">Leadline<small>Local go-to-market</small></div>
-      <p class="rail-label">Desk</p>
-      <nav>${navLinks(DESK, page)}</nav>
-      <p class="rail-label">Work</p>
-      <nav>${navLinks(WORK, page)}</nav>
-      <p>Full power sends an Allow message. Reach does not ask for a separate approval. A captcha stops that page, and the rest of the desk keeps moving.</p>
+      <nav>${navLinks(RAIL, page)}</nav>
+      <p>Today is the next step. Crew is the graph. Settings holds the switches.</p>
     </aside>
     <main>
       <header class="top">
@@ -112,7 +93,7 @@ export function shell(page) {
         </div>
         <div class="flow">${esc(step.flow)} · ${esc(STEPS[step.step] || step.step)}</div>
       </header>
-      ${powerBar()}
+      ${page.showPower ? powerBar() : ''}
       ${page.body}
     </main>
   </div>

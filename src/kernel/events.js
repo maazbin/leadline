@@ -1,6 +1,6 @@
 // src/kernel/events.js — append-only activity log in SQLite.
 //
-// Owns: events rows and the short list the Today page shows.
+// Owns: events rows and the short path the crew graph shows.
 // Must not: decide the next step.
 // Writes: events. Keeps the newest 2000 rows.
 
