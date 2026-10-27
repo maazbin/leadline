@@ -13,6 +13,7 @@ import { CSS } from './styles.js';
 const DESK = [
   ['/', 'Today', 'kernel'],
   ['/crew', 'Crew', 'kernel'],
+  ['/pipeline', 'Pipeline', 'kernel'],
   ['/plan', 'Plan', 'kernel'],
   ['/questions', 'Questions', 'kernel'],
   ['/persona', 'Persona', 'kernel'],
@@ -39,6 +40,7 @@ const CONTROL = [
 const PLACES = [
   { label: 'Today' },
   { label: 'Crew', group: 'Desk', groupHref: '/#desk' },
+  { label: 'Pipeline', group: 'Desk', groupHref: '/#desk' },
   { label: 'Plan', group: 'Desk', groupHref: '/#desk' },
   { label: 'Questions', group: 'Desk', groupHref: '/#desk' },
   { label: 'Persona', group: 'Desk', groupHref: '/#desk' },
