@@ -14,6 +14,7 @@ import { shell } from './layout.js';
 import { crewPage } from './pages/crew.js';
 import { beginPost, powerPost, settingsPage, settingsPost } from './pages/desk.js';
 import { personaPage } from './pages/persona.js';
+import { pipelinePage } from './pages/pipeline.js';
 import { planPage, planPost } from './pages/plan.js';
 import { questionsPage } from './pages/questions.js';
 import { resultsPage } from './pages/results.js';
@@ -47,6 +48,7 @@ async function handle(req, res) {
   if (req.method === 'GET' && path === '/results') return html(res, resultsPage(query));
   if (req.method === 'GET' && path === '/tracking') return html(res, trackingPage(query));
   if (req.method === 'GET' && path === '/crew') return html(res, crewPage(query));
+  if (req.method === 'GET' && path === '/pipeline') return html(res, pipelinePage(query));
   if (req.method === 'GET' && path === '/settings') return html(res, settingsPage(query));
   if (req.method === 'GET' && path === '/setup') return html(res, setupPage(query));
   if (req.method === 'GET' && path === '/discover') return html(res, discoverPage(query));

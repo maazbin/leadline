@@ -308,7 +308,8 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(await savedPage.text(), /Harbor Studio/);
     const desk = await (await fetch(`${origin}/`)).text();
     assert.match(desk, /Open the crew/);
-    assert.match(desk, /class="crew-map"/);
+    assert.match(desk, /class="pipeline"/);
+    assert.match(desk, /aria-label="Pipeline"/);
     assert.match(desk, /class="door"/);
     assert.match(desk, /href="\/crew"/);
     assert.match(desk, /href="\/plan"/);
@@ -336,6 +337,12 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(reachNav, /aria-label="Breadcrumb"/);
     assert.match(reachNav, /href="\/#work"/);
     assert.match(reachNav, /aria-current="page">Reach/);
+    const pipe = await (await fetch(`${origin}/pipeline`)).text();
+    assert.match(pipe, /aria-label="Pipeline"/);
+    assert.match(pipe, /aria-current="page">Pipeline/);
+    assert.match(pipe, /Understand/);
+    assert.match(pipe, /Reach/);
+    assert.match(pipe, /Beside the day/);
     const persona = await (await fetch(`${origin}/persona`)).text();
     assert.match(persona, /Harbor Studio/);
     assert.match(persona, /Founders of small software firms/);

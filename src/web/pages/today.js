@@ -1,14 +1,14 @@
 // src/web/pages/today.js — Today and Understand.
 //
 // Owns: the home summary and the setup form.
-// Must not: send, approve, or change a channel mode. The front shows the graph and a door for every screen.
+// Must not: send, approve, or change a channel mode. The front shows the pipeline and a door for every screen.
 // Writes: business, answers, and questions, through the understand module.
 
-import { fullPower, getSettings, startConsent } from '../../kernel/desk.js';
+import { getSettings, startConsent } from '../../kernel/desk.js';
 import { plan } from '../../kernel/flows.js';
 import { ledgerSummary, listLedger } from '../../kernel/ledger.js';
 import { esc } from '../../kernel/text.js';
-import { crewMap } from '../crew-map.js';
+import { pipelineView } from './pipeline.js';
 import { answerQuestion, getBusiness, openQuestions, profileGaps, saveBusiness } from '../../understand/profile.js';
 import { addLinks, addPdf, listSources, readSource } from '../../understand/sources.js';
 import { listPages, readWebsite } from '../../understand/website.js';
@@ -43,6 +43,7 @@ export function homePage(query) {
 const GROUPS = [
   ['desk', 'Desk', [
     ['/crew', 'Crew', 'Open the crew', 'kernel'],
+    ['/pipeline', 'Pipeline', 'The day, left to right', 'kernel'],
     ['/plan', 'Plan', "Today's lines", 'kernel'],
     ['/questions', 'Questions', 'Answers', 'kernel'],
     ['/persona', 'Persona', 'Who it is for', 'kernel'],
@@ -87,10 +88,9 @@ function todayPanel() {
       ${step.url ? `<div class="row"><a class="button" href="${esc(step.url)}">Open this step</a></div>` : ''}
     </section>
     <section>
-      <h2>The crew</h2>
-      <p class="muted">${esc(ledgerSummary(listLedger()))}</p>
-      ${crewMap(fullPower())}
-      <p class="legend"><span class="working">Working</span><span class="waiting">Waiting on you</span><span class="stuck">Needs a look</span><span class="off">Off</span><span class="paused">Paused</span></p>
+      <h2>Pipeline</h2>
+      <p class="muted">${esc(ledgerSummary(listLedger()))} <a href="/pipeline">Open the pipeline</a>. <a href="/crew">Open the crew graph</a>.</p>
+      ${pipelineView()}
     </section>
     ${groups}`;
 }
