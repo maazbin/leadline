@@ -307,16 +307,20 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     const savedPage = await fetch(`${origin}/setup`);
     assert.match(await savedPage.text(), /Harbor Studio/);
     const desk = await (await fetch(`${origin}/`)).text();
-    assert.match(desk, /Where it stuck/);
-    assert.match(desk, /Nothing is stuck/);
-    assert.match(desk, /href="\/plan"/);
+    assert.match(desk, /Open the crew/);
     assert.match(desk, /href="\/crew"/);
-    assert.match(desk, /href="\/persona"/);
+    assert.doesNotMatch(desk, /Where it stuck/);
+    assert.doesNotMatch(desk, /href="\/plan"/);
     const crew = await (await fetch(`${origin}/crew`)).text();
+    assert.match(crew, /<svg class="crew-map"/);
     assert.match(crew, /The master checked the crew/);
     assert.match(crew, /The required lanes are working/);
     assert.match(crew, /Understand/);
     assert.match(crew, /Reach/);
+    assert.match(crew, /href="\/plan"/);
+    assert.match(crew, /href="\/persona"/);
+    assert.match(crew, /Where it stuck/);
+    assert.match(crew, /Nothing is stuck/);
     const persona = await (await fetch(`${origin}/persona`)).text();
     assert.match(persona, /Harbor Studio/);
     assert.match(persona, /Founders of small software firms/);
@@ -460,7 +464,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     const reachOn = await (await fetch(`${origin}/reach`)).text();
     assert.match(reachOn, /Full power is on/);
     assert.doesNotMatch(reachOn, /Approve send/);
-    assert.match(await (await fetch(`${origin}/`)).text(), /What to do/);
+    assert.match(await (await fetch(`${origin}/`)).text(), /Open the crew/);
     assert.match(await (await fetch(`${origin}/learn`)).text(), /Try this next/);
 
     const exe = chromePath();
@@ -485,11 +489,11 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
       await page.waitForURL(/\/settings\?ok=desk/);
       assert.match(await page.locator('body').innerText(), /Settings saved/);
       await page.goto(`${origin}/`);
-      assert.match(await page.locator('body').innerText(), /What to do/);
-      await page.locator('aside').getByRole('link', { name: 'Agents', exact: true }).click();
+      assert.match(await page.locator('body').innerText(), /Open the crew/);
+      await page.locator('aside').getByRole('link', { name: 'Crew', exact: true }).click();
       await page.waitForURL(/\/crew$/);
       assert.match(await page.locator('body').innerText(), /The crew/);
-      await page.locator('aside').getByRole('link', { name: 'Plan', exact: true }).click();
+      await page.locator('.crew-map a[href="/plan"]').click();
       await page.waitForURL(/\/plan$/);
       assert.match(await page.locator('body').innerText(), /Today's plan/);
       await page.goto(`${origin}/reach`);

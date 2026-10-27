@@ -16,7 +16,7 @@ The agent asks once: **Should I start Leadline?**
 
 ## Full power
 
-A yes turns it on. The bar on every screen turns it off again.
+A yes turns it on. The bar on Today and on Settings turns it off again.
 
 When it is on:
 
@@ -33,7 +33,7 @@ When it is off, Reach asks before each send.
 
 ## The desk
 
-The desk is several screens, each with its own path: Today, Plan, Questions, Persona, Trends, Results, Tracking, and Agents. Agents is the monitoring screen. The master writes one card per lane there, about every 20 seconds. Work lives on its own screens: Understand, Discover, Reach, Create, GTM, Settings, Browser, and Memory.
+The rail is three doors: Today, Crew, and Settings. Today holds the next step. Crew is a graph. The master sits in the middle, and the day runs Understand, GTM, Discover, Reach, then Trace. Create and Virality sit beside that path. Click a node and that screen opens on its own: the plan, the questions, the persona, the trends, the results, the tracking, and the work. Each screen is one file, so the agent reads that slice and leaves the rest of the desk alone. About every 20 seconds the master checks the crew. A node says Working, Waiting on you, Needs a look, Off, or Paused. Under the graph, what just happened is a short path.
 
 <p align="center">
   <img src="docs/screenshots/today.png" alt="Today. Full power is on, and one message can go out." width="980">
@@ -74,7 +74,7 @@ The day is filed in these rooms.
 
 ## The master and the crew
 
-You talk to one master. That is the coding agent in the chat. The master calls one lane at a time. About every 20 seconds the desk writes a ledger over the crew: Working, Waiting on you, Needs a look, Off, or Paused.
+You talk to one master. That is the coding agent in the chat. The master calls one lane at a time. About every 20 seconds the desk checks the crew and paints that check on the graph: Working, Waiting on you, Needs a look, Off, or Paused.
 
 While the desk is running, Understand, Discover, GTM, Reach, and Trace stay on. Create and Virality may stay off. Reach is the only sender. A lane that needs a look comes before a new search. The master names the Settings switch and waits. You turn the lane on.
 

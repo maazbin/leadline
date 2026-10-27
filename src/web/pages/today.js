@@ -1,24 +1,19 @@
 // src/web/pages/today.js — Today and Understand.
 //
 // Owns: the home summary and the setup form.
-// Must not: send, approve, or change a channel mode. Plan, Questions, Persona, Trends, Results, Tracking, and Agents are their own files.
+// Must not: send, approve, or change a channel mode. The other screens open from the crew graph.
 // Writes: business, answers, and questions, through the understand module.
 
-import { recommendations, scoreboard } from '../../kernel/brief.js';
 import { getSettings, startConsent } from '../../kernel/desk.js';
-import { recentEvents } from '../../kernel/events.js';
 import { plan } from '../../kernel/flows.js';
-import { dashboard } from '../../kernel/stats.js';
 import { ledgerSummary, listLedger } from '../../kernel/ledger.js';
 import { esc } from '../../kernel/text.js';
 import { answerQuestion, getBusiness, openQuestions, profileGaps, saveBusiness } from '../../understand/profile.js';
-import { activityLine } from '../format.js';
 import { addLinks, addPdf, listSources, readSource } from '../../understand/sources.js';
 import { listPages, readWebsite } from '../../understand/website.js';
 import { STEPS } from '../copy.js';
 import { readMultipart, redirect } from '../http.js';
 import { field, flash, shell } from '../layout.js';
-import { stallSection } from './stalls.js';
 
 /**
  * @param {Record<string, string>} query
@@ -39,24 +34,20 @@ export function homePage(query) {
     title: 'Today',
     kicker: 'Desk',
     nav: 'Today',
+    showPower: true,
     body: `${start}${flash(query)}${todayPanel()}`,
   });
 }
 
 function todayPanel() {
   const step = plan();
-  const counts = dashboard();
-  const events = recentEvents(8);
   const settings = getSettings();
   const running = Number(settings.running) === 1;
   const adapt = Number(settings.adaptability) === 1;
-  const recs = recommendations();
-  const board = scoreboard();
   return `
     <section class="status">
       <span class="pill ${running ? 'on' : ''}">${running ? 'Running' : 'Stopped'}</span>
       <span class="pill ${adapt ? 'on' : ''}">${adapt ? 'Adapting' : 'Playbook order'}</span>
-      <a class="button quiet" href="/settings">Settings</a>
     </section>
     <section class="next">
       <p class="kicker">${esc(step.flow)}</p>
@@ -64,55 +55,10 @@ function todayPanel() {
       <p>${esc(step.why)}</p>
       <div class="row">
         ${step.url ? `<a class="button" href="${esc(step.url)}">Open this step</a>` : ''}
-        <span class="muted">Agent tool: ${esc(step.tool || 'none — waiting on you')}</span>
+        <a class="button quiet" href="/crew">Open the crew</a>
       </div>
     </section>
-    <p><a href="/crew">${esc(ledgerSummary(listLedger()))}</a></p>
-    ${stallSection()}
-    <section class="grid stats">
-      ${stat('Leads', counts.leads)}
-      ${stat('Qualified', counts.qualified)}
-      ${stat('Sent', counts.sent)}
-      ${stat('Waiting on you', counts.questions + counts.encounters)}
-    </section>
-    <section class="card">
-      <h2>What to do</h2>
-      <ul class="recs">${recs.map((item) => `<li class="rec ${esc(item.tone)}"><a href="${esc(item.href)}">${esc(item.text)}</a></li>`).join('')}</ul>
-    </section>
-    <section class="card">
-      <h2>Platforms</h2>
-      <table>
-        <thead><tr><th>Platform</th><th>Now</th><th>Today</th><th>Next step</th></tr></thead>
-        <tbody>
-          ${board.map((row) => `<tr>
-            <td>${esc(row.label)}</td>
-            <td>${esc(row.plain)}</td>
-            <td>${row.sent} / ${row.cap}</td>
-            <td>${row.step ? esc(row.step) : '<span class="muted">No open step</span>'}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-      <p class="muted"><a href="/plan">Today's plan</a> · <a href="/crew">Agents</a> · <a href="/questions">Questions and answers</a> · <a href="/learn">Train a step or read a path</a></p>
-    </section>
-    <section class="grid5">
-      ${card('/setup', 'understand', 'Understand', 'What you sell', counts.questions ? `${counts.questions} open` : (profileGaps().length ? 'Gaps' : 'Ready'))}
-      ${card('/discover', 'discover', 'Discover', 'Who to talk to', String(counts.leads))}
-      ${card('/reach', 'reach', 'Reach', 'One message at a time', String(counts.waiting || counts.drafts))}
-      ${card('/create', 'create', 'Create', 'Posts and assets', String(counts.content))}
-      ${card('/gtm', 'gtm', 'GTM', 'The campaign that ties them', String(counts.active))}
-    </section>
-    <section class="card">
-      <h2>Recent activity</h2>
-      ${events.length ? `<ul class="log">${events.map((row) => `<li>${esc(activityLine(row))}</li>`).join('')}</ul>` : '<p class="muted">Nothing recorded yet. Start on Understand.</p>'}
-    </section>`;
-}
-
-function stat(label, value) {
-  return `<div class="statbox"><span class="stat">${esc(value)}</span><span>${esc(label)}</span></div>`;
-}
-
-function card(href, team, title, text, stat) {
-  return `<a class="team" data-team="${team}" href="${href}"><span class="stat">${esc(stat)}</span><strong>${esc(title)}</strong><span>${esc(text)}</span></a>`;
+    <p class="muted">${esc(ledgerSummary(listLedger()))} The graph shows each lane and the screen it opens.</p>`;
 }
 
 /**

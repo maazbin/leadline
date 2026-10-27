@@ -51,7 +51,7 @@ export function recommendations() {
   }
   const questions = openQuestions().length;
   if (questions) {
-    items.push(rec('learn', `${questions} open question${questions === 1 ? '' : 's'}. Answer when you can. The run does not stop for them.`, '/'));
+    items.push(rec('learn', `${questions} open question${questions === 1 ? '' : 's'}. Answer when you can. The run does not stop for them.`, '/questions'));
   }
   const perms = listPermissions();
   const capped = perms.filter((row) => row.mode !== 'off' && Number(row.daily_cap) > 0 && Number(row.sent_today) >= Number(row.daily_cap));

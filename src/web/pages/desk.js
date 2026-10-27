@@ -75,7 +75,7 @@ export function settingsPage(query) {
       </section>
       <section class="card">
         <h2>Lanes</h2>
-        <p class="muted"><a href="/crew">Agents</a> shows whether each lane is working. The master checks about every 20 seconds. Understand, Discover, GTM, Reach, and Trace should be on while the desk is running. Full power keeps Reach on, and it sends without an approval.</p>
+        <p class="muted"><a href="/crew">Crew</a> is the graph. Click a lane to open it. The master checks about every 20 seconds. Understand, Discover, GTM, Reach, and Trace should be on while the desk is running. Full power keeps Reach on, and it sends without an approval.</p>
         <div class="lanes">
           ${LANES.map((lane) => {
             const mode = agentMode(lane.id);
@@ -123,11 +123,11 @@ export function settingsPage(query) {
         });
       }
     </script>`;
-  return shell({ team: 'kernel', title: 'Settings', kicker: 'Control', body });
+  return shell({ team: 'kernel', title: 'Settings', kicker: 'Control', nav: 'Settings', showPower: true, body });
 }
 
 /**
- * One click from the bar at the top of every page. Leaves Run and Adapt as they are.
+ * One click from the bar on Today and Settings. Leaves Run and Adapt as they are.
  * Turning it on moves Email, LinkedIn, and X from Prepare to send, and Allow to send.
  * Turning it off makes those sends wait again.
  * @param {import('node:http').IncomingMessage} req
