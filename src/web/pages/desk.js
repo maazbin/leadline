@@ -20,7 +20,7 @@ const SIMPLE = new Set(['understand', 'discover', 'gtm', 'trace']);
  */
 function choiceLabel(lane, choice) {
   if (lane === 'create' && choice === 'auto') return 'Publish';
-  if (lane === 'virality' && choice === 'auto') return 'Try them';
+  if (lane === 'virality' && choice === 'auto') return 'Post it';
   if (lane === 'create' && choice === 'approve') return 'Ask first';
   if (lane === 'virality' && choice === 'approve') return 'Ask first';
   if (choice === 'off') return 'Off';
@@ -68,14 +68,14 @@ export function settingsPage(query) {
         <p class="muted">The agent asks once, then runs npm and sets these. Full power sends email, forms, and outreach without asking. Adapt prefers what worked. A step you mark wrong stays blocked. Change a switch here if you want a different rule.</p>
         <div class="switches">
           <label class="switch"><input type="checkbox" name="running" value="1" ${Number(settings.running) === 1 ? 'checked' : ''}><span><strong>Run</strong><small>Keep going after you leave this page. Stop clears this.</small></span></label>
-          <label class="switch"><input type="checkbox" name="full_power" value="1" ${power ? 'checked' : ''}><span><strong>Full power</strong><small>Allow platforms send with no prompt. Prepare only still waits. Off stays off.</small></span></label>
+          <label class="switch"><input type="checkbox" name="full_power" value="1" ${power ? 'checked' : ''}><span><strong>Full power</strong><small>Reach writes and sends. Create publishes LinkedIn and X. Virality posts one pattern. Off on a platform stays off.</small></span></label>
           <label class="switch"><input type="checkbox" name="adaptability" value="1" ${Number(settings.adaptability) === 1 ? 'checked' : ''}><span><strong>Adapt</strong><small>Use the step that worked. Skip a failed one. Your correction still wins.</small></span></label>
         </div>
         <p class="muted">${esc(reachPlain)} Sends are spaced so a platform does not see a burst. A captcha or a restriction page waits for you, and the other platforms continue.</p>
       </section>
       <section class="card">
         <h2>Lanes</h2>
-        <p class="muted"><a href="/crew">Crew</a> is the graph. Click a lane to open it. The master checks about every 20 seconds. Understand, Discover, GTM, Reach, and Trace should be on while the desk is running. Full power keeps Reach on, and it sends without an approval.</p>
+        <p class="muted"><a href="/crew">Crew</a> is the graph. Click a lane to open it. The master checks about every 20 seconds. Understand, Discover, GTM, Reach, and Trace should be on while the desk is running. Full power also turns Create and Virality on. They publish and post.</p>
         <div class="lanes">
           ${LANES.map((lane) => {
             const mode = agentMode(lane.id);
@@ -119,6 +119,10 @@ export function settingsPage(query) {
             const allow = document.querySelector('input[name="' + name + '"][value="allow"]');
             const prepare = document.querySelector('input[name="' + name + '"][value="draft"]');
             if (allow && prepare && prepare.checked) allow.checked = true;
+          }
+          for (const name of ['lane_create', 'lane_virality']) {
+            const on = document.querySelector('input[name="' + name + '"][value="auto"]');
+            if (on) on.checked = true;
           }
         });
       }
@@ -214,7 +218,11 @@ export function settingsPost(res, fields) {
     else if (mode === 'approve' && reach !== 'auto') reach = 'approve';
     else if (mode === 'draft' && reach === 'off') reach = 'draft';
   }
-  if (power) reach = 'auto';
+  if (power) {
+    reach = 'auto';
+    saveAgentMode('create', 'auto', 'person');
+    saveAgentMode('virality', 'auto', 'person');
+  }
   saveAgentMode('reach', reach, 'person');
 
   if (saved.running === 1 && saved.full_power === 1) {

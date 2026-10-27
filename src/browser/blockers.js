@@ -4,7 +4,7 @@
 // Must not: try to pass the wall, hide the browser, or change a fingerprint.
 // A normal page that merely links to "Sign in" is not a wall.
 
-const CAPTCHA = /verify you are human|are you human|unusual traffic|security check|captcha|cf-browser-verification|just a moment\.\.\./i;
+const CAPTCHA = /verify you are human|are you human|unusual traffic|security check|cf-browser-verification|just a moment\.\.\./i;
 
 const LOGIN_URL = /linkedin\.com\/login|linkedin\.com\/uas\/login|accounts\.google\.com|x\.com\/i\/flow\/login|facebook\.com\/login|instagram\.com\/accounts\/login|tiktok\.com\/login|reddit\.com\/login/i;
 

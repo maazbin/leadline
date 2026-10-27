@@ -2,7 +2,7 @@
 
 The desk stays on your machine. The coding agent you already use is the master. This repository is the crew: seven lanes, one ledger, one Chrome window, and one gate. Leadline holds no model of its own. It holds the hands, the memory, and the permission to send.
 
-Hand this repository to that agent. It asks one question. You answer in the chat. The agent brings the desk up and carries the day. You sign in once, in the Chrome window it opens, and you publish the posts you want up.
+Hand this repository to that agent. It asks one question. You answer in the chat. The agent brings the desk up and carries the day. You sign in once, in the Chrome window it opens. A plain yes means the desk writes the notes, publishes the LinkedIn and X posts, and posts one trial.
 
 ## The question
 
@@ -20,14 +20,16 @@ A yes turns it on. The bar on Today and on Settings turns it off again.
 
 When it is on:
 
-- Reach sends an Allow message. It does not wait for a separate approval.
+- Reach writes the next note from the campaign and sends it. It does not wait for a separate approval.
+- Create publishes the next LinkedIn post and the next X post.
+- Virality posts one shorter pattern, then keeps the gap. It also looks through X communities and can post once into a job-related community.
 - Email, LinkedIn, and X move from Prepare to Allow. Any other platform stays on the switch you already set.
-- Understand, Discover, GTM, Trace, and Reach are on.
+- Understand, Discover, GTM, Trace, Reach, Create, and Virality are on.
 - A drafted campaign starts on the next pass while Run is on.
 - The daily cap still holds. Zero still blocks that platform for the day.
 - A captcha, a login, or a restriction stops that one page. The other platforms continue.
-- Prepare writes the draft and holds it. Don't use leaves the platform closed.
-- Create still waits for you to publish. Virality still leaves the post to you.
+- Don't use leaves that platform closed.
+- The words come from the campaign and the profile. Missing proof stays missing.
 
 When it is off, Reach asks before each send.
 
@@ -85,8 +87,8 @@ flowchart TB
   master --> discover["Discover<br/>finds people"]
   master --> gtm["GTM<br/>holds the campaign"]
   master --> reach["Reach<br/>sends one message"]
-  master --> create["Create<br/>writes posts"]
-  master --> virality["Virality<br/>tries one pattern"]
+  master --> create["Create<br/>publishes on Full power"]
+  master --> virality["Virality<br/>posts one pattern"]
   master --> trace["Trace<br/>records the stall"]
   ledger["Ledger<br/>reviews the crew every 20 seconds"] -.-> understand
   ledger -.-> discover
@@ -104,8 +106,8 @@ flowchart TB
 | GTM | Yes | Keeps the campaign and the follow-up delay. You press Start. |
 | Reach | Yes | Writes one note and sends one message, then stops. |
 | Trace | Yes | Writes down where the run stopped, and keeps that line until the step is done. |
-| Create | May stay off | Writes the posts. You publish them. |
-| Virality | May stay off | Tries one pattern at a time and records what moved. You publish. |
+| Create | On with Full power | Writes the posts. Full power publishes LinkedIn and X. |
+| Virality | On with Full power | Posts one shorter pattern, then records what moved. |
 
 The day runs in this order. Create and Virality sit beside it. A post is never a gate on a send.
 
@@ -174,14 +176,14 @@ The marks name the channels. They belong to their owners.
 
 - No stealth plugin, no spoofed fingerprint, and no solved captcha.
 - No typed password. A login wall is yours.
-- The master cannot approve a message, mark one sent, or publish a post. `execute_send` is the only sender, and it checks the gate again.
+- The master cannot approve a message or mark one sent by hand. `execute_send` is the only sender, and it checks the gate again.
 - A click on Send records the click. Delivery is a separate fact.
-- Virality records a pattern. You publish.
-- Create writes a draft. You publish.
+- With Full power on, the desk publishes the LinkedIn or X draft after the words are in the box, and Virality posts one shorter pattern.
+- With Full power off, Create and Virality wait for you to publish.
 
 ## A later chapter, on Create
 
-This build stops at drafts you publish yourself. A later chapter may plug picture and video tools into Create: Higgsfield, HeyGen, and Google Flow, which brings Veo 3 and Gemini.
+Full power already publishes a text post on LinkedIn and X. A later chapter may plug picture and video tools into Create: Higgsfield, HeyGen, and Google Flow, which brings Veo 3 and Gemini.
 
 That chapter would run an A/B test and keep the score on this same desk. You would see each thing on its own: the tool, the asset, the test, what worked, and what did not. Each one gets a plain control and a short label.
 
@@ -195,7 +197,7 @@ Open this repository in Grok, Cursor, Claude, Codex, Gemini, VS Code, or Kiro. W
 
 The desk opens at [http://127.0.0.1:7791](http://127.0.0.1:7791). The story of the desk lives in `data/leadline.db`. That folder stays off git. Pictures of stuck pages land in `data/encounters/`.
 
-The client configs are already in the repo. The agent connects, installs what is missing, and opens the desk. Your part is the answer, the sign-in, and the posts you choose to publish.
+The client configs are already in the repo. The agent connects, installs what is missing, and opens the desk. Your part is the answer and the sign-in. With Full power on, the desk publishes the LinkedIn and X posts. With it off, those posts wait for you.
 
 ## How a change lands
 

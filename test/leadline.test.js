@@ -265,6 +265,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     }).ok, true);
     assert.equal(pathLookup('example.com').branches[0].outcome, 'reached');
     assert.equal(classifyBlocker({ title: 'Verify you are human', excerpt: '' }), 'captcha');
+    assert.equal(classifyBlocker({ excerpt: 'It stops on a captcha instead of pretending to pass one.' }), '');
     assert.equal(classifyBlocker({ url: 'https://www.linkedin.com/login', excerpt: 'welcome' }), 'login');
     assert.equal(classifyBlocker({ url: 'https://example.com', title: 'Acme', excerpt: 'We help teams. Sign in is in the footer.' }), '');
 
@@ -530,6 +531,74 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
         await browser.close();
       }
     }
+
+    const { noteFor, draftNextNote } = await import('../src/reach/note.js');
+    const { agentMode } = await import('../src/kernel/desk.js');
+    const { saveContent, setContentStatus, listContent } = await import('../src/create/drafts.js');
+    const { markDeskPublished, nextPublishable } = await import('../src/create/publish.js');
+    const { publishPost, bodyOnPage } = await import('../src/browser/act.js');
+    const { shorterHook } = await import('../src/virality/try.js');
+    const { extractCommunityLinks, communityLooksRelevant } = await import('../src/discover/communities.js');
+    assert.equal(saveDesk({ running: 1, full_power: 0, adaptability: 1 }, 'person').ok, true);
+    assert.equal(draftNextNote().code, 'waiting');
+    assert.equal(saveDesk({ running: 1, full_power: 1, adaptability: 1 }, 'person').ok, true);
+    assert.equal(agentMode('create'), 'auto');
+    assert.equal(agentMode('virality'), 'auto');
+    assert.equal(agentMode('reach'), 'auto');
+    const sample = noteFor({
+      name: 'Muhammad Junaid',
+      offer: 'Free local job hunter. https://github.com/maazbin/jobpilot',
+      goal: 'Get it in front of people hunting.',
+      sender: 'Maaz',
+    });
+    assert.match(sample, /Muhammad/);
+    assert.match(sample, /github\.com\/maazbin\/jobpilot/);
+    assert.doesNotMatch(sample, /1500/);
+    assert.ok(sample.length <= 200);
+    assert.equal(bodyOnPage(sample, sample), true);
+    assert.equal(bodyOnPage('Sign in', sample), false);
+    const made = saveContent({
+      campaignId: campaign.id,
+      channel: 'x',
+      title: 'Spring',
+      body: 'A desk that keeps outreach under the sender\'s control https://northwind.example',
+    });
+    assert.equal(made.ok, true);
+    assert.equal(setContentStatus(made.id, 'published', 'agent').code, 'human_only');
+    assert.equal(nextPublishable().id, made.id);
+    assert.equal((await publishPost({ channel: 'x', body: made.id ? 'A desk that keeps outreach under the sender\'s control' : '' })).code, 'browser_disabled');
+    assert.equal(listContent({ limit: 40 }).find((row) => row.id === made.id).status, 'draft');
+    assert.equal(markDeskPublished(made.id).ok, true);
+    assert.match(shorterHook('One change only. https://northwind.example Then more words that should drop.'), /northwind\.example/);
+    assert.doesNotMatch(shorterHook('One change only. https://northwind.example Then more words that should drop.'), /should drop/);
+    assert.deepEqual(extractCommunityLinks(['https://x.com/i/communities/42', 'https://x.com/home']), [{ id: '42', url: 'https://x.com/i/communities/42', text: '' }]);
+    assert.equal(communityLooksRelevant('Software engineers hiring'), true);
+    assert.equal(communityLooksRelevant('Photos of cats'), false);
+    setChannelMode('linkedin', 'auto', 5, 'person');
+    const lone = saveLead({
+      source: 'linkedin',
+      source_url: 'https://www.linkedin.com/in/lone-example',
+      name: 'Lone Person',
+      snippet: 'Open to work',
+    });
+    setFit(lone.id, 'yes', 'Fits the campaign');
+    run("UPDATE leads SET fit = 'no' WHERE id != ?", lone.id);
+    run("UPDATE messages SET status = 'cancelled' WHERE status IN ('draft', 'awaiting_approval', 'approved')");
+    assert.equal(plan().step, 'desk_note');
+    const wrote = draftNextNote();
+    assert.equal(wrote.ok, true);
+    const wroteBody = get('SELECT body, status, channel FROM messages WHERE id = ?', wrote.id);
+    assert.match(wroteBody.body, /Lone/);
+    assert.match(wroteBody.body, /outreach under the sender/);
+    assert.doesNotMatch(wroteBody.body, /1500/);
+    assert.doesNotMatch(wroteBody.body, /Twelve teams/);
+    assert.equal(wroteBody.channel, 'linkedin');
+    assert.equal((await executeSend(wrote.id)).code, 'browser_disabled');
+    assert.equal(get('SELECT status FROM messages WHERE id = ?', wrote.id).status, 'draft');
+    const moving = reviewLedger();
+    assert.equal(moving.lanes.find((row) => row.agent === 'create').status, 'working');
+    assert.equal(moving.lanes.find((row) => row.agent === 'virality').status, 'working');
+    assert.equal(moving.lanes.find((row) => row.agent === 'reach').status, 'working');
 
     assert.ok(get("SELECT status FROM messages WHERE id = ?", draft.id).status === 'sent');
   } catch (err) {

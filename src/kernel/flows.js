@@ -117,18 +117,22 @@ function createPlan(origin) {
       url: `${origin}/create`,
       slice: 'profile',
       campaignId: campaign.id,
-      why: `Draft one ${missing} post for this campaign. Do not publish it. The person marks it published after they post it.`,
+      why: fullPower()
+        ? `Draft one ${missing} post from the campaign. Full power publishes it. Do not invent proof, prices, or customers.`
+        : `Draft one ${missing} post for this campaign. Do not publish it. The person marks it published after they post it.`,
     });
   }
   const pending = drafts.find((draft) => draft.status === 'idea' || draft.status === 'draft');
   if (pending) {
     return finish({
       flow: 'create',
-      step: 'review',
+      step: fullPower() ? 'publish' : 'review',
       tool: null,
       url: `${origin}/create`,
       slice: 'drafts',
-      why: 'A content draft is waiting for the person. You cannot approve it or mark it published.',
+      why: fullPower()
+        ? 'Full power publishes this LinkedIn or X draft. Do not post a second copy.'
+        : 'A content draft is waiting for the person. You cannot approve it or mark it published.',
     });
   }
   return finish({
@@ -266,6 +270,17 @@ function mainPlan(origin) {
 
   const naked = qualifiedWithoutMessage();
   if (naked) {
+    if (power) {
+      return finish({
+        flow: 'reach',
+        step: 'desk_note',
+        tool: null,
+        leadId: naked.id,
+        url: `${origin}/reach`,
+        slice: 'profile',
+        why: 'Full power writes this note from the campaign and sends it. Do not draft a second note. Do not invent proof, prices, or customers.',
+      });
+    }
     return finish({
       flow: 'reach',
       step: 'draft',

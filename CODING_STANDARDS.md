@@ -55,5 +55,6 @@ Every file under `src/` starts with:
 ## Checks
 
 - `npm test` covers the gate, dedup, the human-only actor, the context cap, and the pages.
-- Add a test when you change who is allowed to send.
+- Add a test when you change who is allowed to send, publish, or post.
+- When Full power is on, Reach writes the next note and sends it, Create publishes LinkedIn and X, and Virality posts one shorter pattern. Full power off still waits. A platform set to Off still waits. The post or send happens only after the words are in the box.
 - GitHub Actions runs that same test as the check named `test`. Main accepts a merge only after it is green. Auto-merge is armed on the pull request, and GitHub merges it. Copilot reviews, and that review does not replace the check. See `docs/flows/ship.md`.

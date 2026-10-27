@@ -1,18 +1,23 @@
 // src/kernel/harness.js — the master loop. One process, one send, then a gap.
 //
 // Owns: the timer that keeps a Run desk moving, and the crew review on that timer.
-// Must not: start when Run is off, send when Reach is off, or send a second message in one tick.
+// Must not: start when Run is off, send when Reach is off, or do a second browser write in one tick.
+// When Full power is on, one tick may write the next note, publish one post, or post one trial.
 // Must not: solve a captcha. execute_send already stops on one.
 // A linked-in write waits longer than an email. That gap is how accounts stay unblocked.
 
 import { get, run } from './db.js';
-import { deskRunning, fullPower, agentMode } from './desk.js';
+import { deskRunning, fullPower, agentMode, alignWorkWithFullPower } from './desk.js';
 import { plan } from './flows.js';
 import { nowIso } from './time.js';
 import { newestCampaign, setCampaignStatus } from '../gtm/campaigns.js';
 import { canSend } from '../reach/gate.js';
 import { listMessages } from '../reach/rows.js';
-import { executeSend } from '../browser/act.js';
+import { channelHeld, draftNextNote } from '../reach/note.js';
+import { ensureCampaignPost, nextPublishable, markDeskPublished } from '../create/publish.js';
+import { ensureTrial } from '../virality/try.js';
+import { recordStrategy } from './strategies.js';
+import { executeSend, exploreCommunities, publishPost } from '../browser/act.js';
 import { reviewLedger } from './ledger.js';
 import { syncStalls } from '../trace/stalls.js';
 
@@ -65,10 +70,38 @@ function masterPass() {
 /** One step. Safe to call when the desk is stopped. Trace records a stall after the step. */
 export async function tick() {
   try {
-    return await tickOnce();
+    const result = await tickOnce();
+    if (result && !['stopped', 'pacing', 'idle', 'waiting', 'reach_off'].includes(result.code)) {
+      const detail = result.detail ? `: ${result.detail}` : '';
+      console.log(`Leadline ${result.code}${detail}`);
+    }
+    return result;
   } finally {
     masterPass();
   }
+}
+
+function sendable() {
+  const pool = [
+    ...listMessages({ status: 'approved', limit: 10 }),
+    ...listMessages({ status: 'awaiting_approval', limit: 10 }),
+    ...listMessages({ status: 'draft', limit: 10 }),
+  ];
+  return pool.find((row) => !channelHeld(row.channel) && canSend(row.id).ok);
+}
+
+/**
+ * @param {{ id: number, channel: string, body: string }} row
+ * @param {'create' | 'virality'} kind
+ */
+async function postOne(row, kind) {
+  const result = await publishPost({ channel: row.channel, body: row.body });
+  if (result.ok) {
+    markDeskPublished(row.id);
+    if (kind === 'virality') recordStrategy('vir-one', 'worked', 'Posted the shorter hook.', 'agent');
+  }
+  markPace(String(row.channel || 'x'));
+  return result;
 }
 
 async function tickOnce() {
@@ -76,21 +109,35 @@ async function tickOnce() {
   if (fullPower()) {
     const campaign = newestCampaign();
     if (campaign && campaign.status === 'draft') setCampaignStatus(campaign.id, 'active', 'person');
+    alignWorkWithFullPower();
+    if (agentMode('reach') !== 'off' && !sendable()) draftNextNote();
+    ensureCampaignPost();
   }
-  if (agentMode('reach') === 'off') return { ok: true, code: 'reach_off', plan: plan() };
+  if (agentMode('reach') === 'off' && !fullPower()) return { ok: true, code: 'reach_off', plan: plan() };
   if (!fullPower() && agentMode('reach') !== 'auto') return { ok: true, code: 'waiting', plan: plan() };
   if (paced()) return { ok: true, code: 'pacing' };
-  const pool = [
-    ...listMessages({ status: 'approved', limit: 10 }),
-    ...listMessages({ status: 'awaiting_approval', limit: 10 }),
-    ...listMessages({ status: 'draft', limit: 10 }),
-  ];
-  const message = pool.find((row) => canSend(row.id).ok);
-  if (!message) return { ok: true, code: 'idle', plan: plan() };
-  const result = await executeSend(message.id);
-  if (result.ok || result.code === 'sent') markPace(String(message.channel));
-  else if (['captcha', 'login', 'no_send_button', 'recipient_not_visible', 'composer_empty'].includes(result.code)) markPace(String(message.channel));
-  return result;
+
+  const message = agentMode('reach') === 'off' ? null : sendable();
+  if (message) {
+    const result = await executeSend(message.id);
+    if (result.ok || result.code === 'sent') markPace(String(message.channel));
+    else if (['captcha', 'login', 'no_send_button', 'recipient_not_visible', 'composer_empty', 'not_sent', 'no_composer', 'premium_wall'].includes(result.code)) {
+      markPace(String(message.channel));
+    }
+    return result;
+  }
+
+  if (!fullPower()) return { ok: true, code: 'idle', plan: plan() };
+
+  const draft = nextPublishable();
+  if (draft) return postOne(draft, 'create');
+
+  const trial = ensureTrial();
+  if (trial.ok) return postOne(trial, 'virality');
+
+  const communities = await exploreCommunities();
+  if (communities.code === 'posted') markPace('x');
+  return communities;
 }
 
 /** Start the loop for this server. A second call does nothing. */

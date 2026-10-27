@@ -16,7 +16,7 @@ Do not tell the person to run npm, open a terminal, or click Run. You do that.
 
 - Do not call `begin` before the person has answered.
 - When Full power is off, do not send a message that is not already allowed. Ask on Reach.
-- When Full power is on, send the one message `next_action` names. Do not ask whether that email, form, or outreach should go. Still stop on a captcha, a login, or a restriction page, record it, and continue on another platform.
+- When Full power is on, the desk writes the next note, sends it, publishes the LinkedIn or X draft, and posts one Virality pattern. If `next_action` names `execute_send`, send that one message. If the step is `desk_note` or `publish`, do not draft or post a second copy. Still stop on a captcha, a login, or a restriction page, record it, and continue on another platform.
 - Do not mark a message sent. `execute_send` does that only after the button click and the gate.
 - Do not solve a captcha, hide the browser, or change its fingerprint. Stop and `record_encounter`.
 - Do not type a password. A login wall is the person's.
@@ -44,7 +44,7 @@ Until `onboard_status` reports no gaps, the only work is understanding the busin
 | Understand | `src/understand/` | `docs/flows/understand.md` | Read a PDF, the site, or a signed-in social profile, and fill empty fields | Invent the offer, or read a logged-out profile |
 | Discover | `src/discover/` | `docs/flows/discover.md` | Save and judge leads | Message from a search page |
 | Reach | `src/reach/` | `docs/flows/reach.md` | Draft, request approval, send one gated message | Approve, or change a mode |
-| Create | `src/create/` | `docs/flows/create.md` | Draft a post | Publish it |
+| Create | `src/create/` | `docs/flows/create.md` | Draft a post. With Full power on, leave publishing to the desk | Publish a second copy, or mark a post published without the browser click |
 | GTM | `src/gtm/` | `docs/flows/gtm.md` | Create a draft campaign | Press Start |
 | Trace | `src/trace/` | `docs/flows/trace.md` | Record where the run stopped | Send, or clear a stall that is still true |
 | Master ledger | `src/kernel/ledger.js` | `docs/flows/ledger.md` | Review the crew and read who is stuck | Send, or change a lane mode |
