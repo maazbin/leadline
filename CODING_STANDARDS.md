@@ -52,4 +52,4 @@ Every file under `src/` starts with:
 
 - `npm test` covers the gate, dedup, the human-only actor, the context cap, and the pages.
 - Add a test when you change who is allowed to send.
-- GitHub runs that same test as the check named `test`. Main accepts a merge only after it is green. See `docs/flows/ship.md`.
+- GitHub Actions runs that same test as the check named `test`. Main accepts a merge only after it is green. Auto-merge is armed on the pull request, and GitHub merges it. Copilot reviews, and that review does not replace the check. See `docs/flows/ship.md`.

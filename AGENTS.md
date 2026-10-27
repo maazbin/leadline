@@ -61,15 +61,16 @@ Read `CODING_STANDARDS.md` and the flow doc for the team you touch. Add a migrat
 
 ## Landing a change
 
-Main is protected. A direct push is rejected. Follow `docs/flows/ship.md`.
+Main is protected. A direct push is rejected. GitHub merges the pull request. Follow `docs/flows/ship.md`.
 
 1. Branch from `main`. Do not commit on `main`.
 2. Open a pull request into `main`.
-3. Wait until the check named `test` is green. That job is `.github/workflows/test.yml` and it runs `npm test`.
-4. Merge the pull request. A finished green pull request does not stay open.
-5. Do not force-push `main`, delete `main`, or turn the ruleset off.
+3. GitHub Actions runs the check named `test` (`.github/workflows/test.yml`, `npm test`). Copilot reviews the pull request. The review does not block the merge.
+4. Leave the merge to GitHub. `.github/workflows/merge.yml` arms auto-merge. If that job did not arm it, run `gh pr merge <number> --auto --merge`.
+5. A green pull request does not stay open. A red `test` check blocks the merge. Fix the branch.
+6. Do not force-push `main`, delete `main`, or turn the ruleset off.
 
-No review approval is required. A red `test` check blocks the merge. Fix the branch.
+No review approval is required.
 
 ## Tools
 
