@@ -1,7 +1,7 @@
 // src/web/pages/today.js — Today and Understand.
 //
 // Owns: the home summary and the setup form.
-// Must not: send, approve, or change a channel mode.
+// Must not: send, approve, or change a channel mode. Plan, Questions, Persona, Trends, Results, Tracking, and Agents are their own files.
 // Writes: business, answers, and questions, through the understand module.
 
 import { recommendations, scoreboard } from '../../kernel/brief.js';
@@ -9,14 +9,16 @@ import { getSettings, startConsent } from '../../kernel/desk.js';
 import { recentEvents } from '../../kernel/events.js';
 import { plan } from '../../kernel/flows.js';
 import { dashboard } from '../../kernel/stats.js';
+import { ledgerSummary, listLedger } from '../../kernel/ledger.js';
 import { esc } from '../../kernel/text.js';
 import { answerQuestion, getBusiness, openQuestions, profileGaps, saveBusiness } from '../../understand/profile.js';
-import { crewSection, deskBody, deskTab, deskTitle, stallSection } from './dashboard.js';
+import { activityLine } from '../format.js';
 import { addLinks, addPdf, listSources, readSource } from '../../understand/sources.js';
 import { listPages, readWebsite } from '../../understand/website.js';
 import { STEPS } from '../copy.js';
 import { readMultipart, redirect } from '../http.js';
 import { field, flash, shell } from '../layout.js';
+import { stallSection } from './stalls.js';
 
 /**
  * @param {Record<string, string>} query
@@ -32,14 +34,12 @@ export function homePage(query) {
         <form method="post" action="/desk/begin"><input type="hidden" name="answer" value="no"><button type="submit" class="quiet">No</button></form>
       </div>
     </section>`;
-  const desk = deskBody(query, todayPanel());
   return shell({
     team: 'kernel',
-    title: deskTitle(deskTab(query.tab)),
+    title: 'Today',
     kicker: 'Desk',
     nav: 'Today',
-    tabs: desk.tabs,
-    body: `${start}${desk.body}`,
+    body: `${start}${flash(query)}${todayPanel()}`,
   });
 }
 
@@ -67,7 +67,7 @@ function todayPanel() {
         <span class="muted">Agent tool: ${esc(step.tool || 'none — waiting on you')}</span>
       </div>
     </section>
-    ${crewSection()}
+    <p><a href="/crew">${esc(ledgerSummary(listLedger()))}</a></p>
     ${stallSection()}
     <section class="grid stats">
       ${stat('Leads', counts.leads)}
@@ -92,34 +92,19 @@ function todayPanel() {
           </tr>`).join('')}
         </tbody>
       </table>
-      <p class="muted"><a href="/?tab=plan">Today's plan</a> · <a href="/learn">Train a step or read a path</a> · <a href="/?tab=questions">Questions and answers</a></p>
+      <p class="muted"><a href="/plan">Today's plan</a> · <a href="/crew">Agents</a> · <a href="/questions">Questions and answers</a> · <a href="/learn">Train a step or read a path</a></p>
     </section>
     <section class="grid5">
       ${card('/setup', 'understand', 'Understand', 'What you sell', counts.questions ? `${counts.questions} open` : (profileGaps().length ? 'Gaps' : 'Ready'))}
       ${card('/discover', 'discover', 'Discover', 'Who to talk to', String(counts.leads))}
-      ${card('/reach', 'reach', 'Reach', 'Permissioned outreach', String(counts.waiting || counts.drafts))}
+      ${card('/reach', 'reach', 'Reach', 'One message at a time', String(counts.waiting || counts.drafts))}
       ${card('/create', 'create', 'Create', 'Posts and assets', String(counts.content))}
       ${card('/gtm', 'gtm', 'GTM', 'The campaign that ties them', String(counts.active))}
     </section>
     <section class="card">
       <h2>Recent activity</h2>
-      ${events.length ? `<ul class="log">${events.map((row) => `<li>${esc(activity(row))}</li>`).join('')}</ul>` : '<p class="muted">Nothing recorded yet. Start on Understand.</p>'}
+      ${events.length ? `<ul class="log">${events.map((row) => `<li>${esc(activityLine(row))}</li>`).join('')}</ul>` : '<p class="muted">Nothing recorded yet. Start on Understand.</p>'}
     </section>`;
-}
-
-function activity(row) {
-  if (row.kind === 'desk') return 'Settings updated';
-  if (row.kind === 'lane') return `${row.ref} set to ${row.detail}`;
-  if (row.kind === 'permission') return `${row.ref}: ${row.detail}`;
-  if (row.kind === 'train') return `Playbook updated for ${row.ref}`;
-  if (row.kind === 'strategy') return `${row.ref}: ${row.detail}`;
-  if (row.kind === 'material') return `Material saved: ${row.detail}`;
-  if (row.kind === 'plan') return `Plan ${row.detail}`;
-  if (row.kind === 'stall') return `Trace: ${row.detail === 'no_message' ? 'no message written' : row.detail === 'composer' ? 'note not in the box' : row.detail}`;
-  if (row.kind === 'stall_cleared') return 'Trace cleared a stall';
-  if (row.kind === 'ledger') return row.detail === 'crew fine' ? 'Master checked the crew' : `Master check: ${row.detail}`;
-  const detail = row.detail ? ` — ${row.detail}` : '';
-  return `${row.team} ${row.kind}${detail}`;
 }
 
 function stat(label, value) {
@@ -192,8 +177,7 @@ export function setupPage(query) {
  */
 export function answerPost(res, fields) {
   const result = answerQuestion(Number(fields.id), String(fields.answer || ''), 'person');
-  const tab = fields.tab === 'questions' ? 'tab=questions&' : '';
-  redirect(res, result.ok ? `/?${tab}ok=saved` : `/?${tab}error=${result.code}`);
+  redirect(res, result.ok ? '/questions?ok=saved' : `/questions?error=${result.code}`);
 }
 
 /**

@@ -28,6 +28,8 @@ Create and Virality may stay Off. That row is `off`, and it is not a fault.
 
 `fine` is true when no row is `stuck`.
 
+When Full power is on, Reach is not waiting on an approval. An Allow message can go. Prepare and Off still wait. The monitoring screen is `/crew`.
+
 ## Steps
 
 1. Call `review_ledger` if Today says a lane needs a look, or if this pass has not reviewed yet.

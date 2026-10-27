@@ -6,15 +6,22 @@
 
 import http from 'node:http';
 import { getDb } from '../kernel/db.js';
+import { alignReachWithFullPower } from '../kernel/desk.js';
 import { bindHarness } from '../kernel/harness.js';
 import { preferredPort, setBoundPort } from '../kernel/ports.js';
-import { html, json, readForm } from './http.js';
+import { html, json, readForm, redirect } from './http.js';
 import { shell } from './layout.js';
+import { crewPage } from './pages/crew.js';
 import { beginPost, powerPost, settingsPage, settingsPost } from './pages/desk.js';
+import { personaPage } from './pages/persona.js';
+import { planPage, planPost } from './pages/plan.js';
+import { questionsPage } from './pages/questions.js';
+import { resultsPage } from './pages/results.js';
 import {
   browserLaunch, browserOpen, browserPage, learnPage, learnResolve, permissionsPage, permissionsPost, strategyPost,
 } from './pages/system.js';
-import { planPost } from './pages/dashboard.js';
+import { trackingPage } from './pages/tracking.js';
+import { trendsPage } from './pages/trends.js';
 import { answerPost, homePage, materialsPost, readMaterialPost, readSite, setupPage, setupPost } from './pages/today.js';
 import {
   createOpen, createPage, createPost, createStatus, discoverFit, discoverOutcome, discoverPage,
@@ -31,7 +38,15 @@ async function handle(req, res) {
   const path = url.pathname;
   const query = Object.fromEntries(url.searchParams.entries());
   if (req.method === 'GET' && path === '/health') return json(res, { ok: true });
+  if (req.method === 'GET' && path === '/' && query.tab) return redirect(res, legacyDesk(query));
   if (req.method === 'GET' && path === '/') return html(res, homePage(query));
+  if (req.method === 'GET' && path === '/plan') return html(res, planPage(query));
+  if (req.method === 'GET' && path === '/questions') return html(res, questionsPage(query));
+  if (req.method === 'GET' && path === '/persona') return html(res, personaPage(query));
+  if (req.method === 'GET' && path === '/trends') return html(res, trendsPage(query));
+  if (req.method === 'GET' && path === '/results') return html(res, resultsPage(query));
+  if (req.method === 'GET' && path === '/tracking') return html(res, trackingPage(query));
+  if (req.method === 'GET' && path === '/crew') return html(res, crewPage(query));
   if (req.method === 'GET' && path === '/settings') return html(res, settingsPage(query));
   if (req.method === 'GET' && path === '/setup') return html(res, setupPage(query));
   if (req.method === 'GET' && path === '/discover') return html(res, discoverPage(query));
@@ -84,12 +99,37 @@ async function handle(req, res) {
   }), 404);
 }
 
+const LEGACY_DESK = {
+  today: '/',
+  plan: '/plan',
+  questions: '/questions',
+  persona: '/persona',
+  trends: '/trends',
+  results: '/results',
+  tracking: '/tracking',
+};
+
+/**
+ * Old `/?tab=` links. Each screen now has its own path.
+ * @param {Record<string, string>} query
+ */
+function legacyDesk(query) {
+  const next = LEGACY_DESK[query.tab] || '/';
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (key !== 'tab' && value) params.set(key, value);
+  }
+  const tail = params.toString();
+  return tail ? `${next}?${tail}` : next;
+}
+
 /**
  * @param {{ tolerateInUse?: boolean }} [opts]
  * @returns {Promise<{ port: number, server: import('node:http').Server | null, inUse: boolean }>}
  */
 export function startServer(opts = {}) {
   getDb();
+  alignReachWithFullPower();
   const server = http.createServer((req, res) => {
     handle(req, res).catch((err) => {
       console.error(err instanceof Error ? err.message : err);

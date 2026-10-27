@@ -199,14 +199,19 @@ function judgeReach(mode, facts) {
     const name = String(waiting.name || 'A person').trim() || 'A person';
     return { status: 'stuck', detail: `${name} is marked yes and has no message, so there is nothing to send.` };
   }
-  if (facts.power && mode !== 'auto') {
-    return { status: 'waiting', detail: 'Full power is on, and Reach still asks before a send.' };
-  }
-  if (mode === 'draft' || mode === 'approve') {
+  if (!facts.power && (mode === 'draft' || mode === 'approve')) {
     return { status: 'waiting', detail: 'Reach asks before a send.' };
   }
-  if (facts.sendable) return { status: 'working', detail: 'One message can go out.' };
-  return { status: 'working', detail: 'Nothing is waiting to send.' };
+  if (facts.sendable) {
+    return {
+      status: 'working',
+      detail: facts.power ? 'Full power sends the next Allow message. No approval is waiting.' : 'One message can go out.',
+    };
+  }
+  return {
+    status: 'working',
+    detail: facts.power ? 'Full power is on. Nothing is waiting to send.' : 'Nothing is waiting to send.',
+  };
 }
 
 /**

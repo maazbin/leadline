@@ -57,7 +57,7 @@ export function settingsPage(query) {
   const perms = listPermissions();
   const reach = agentMode('reach');
   const reachPlain = reach === 'off' ? 'Reach is off.'
-    : power && reach === 'auto' ? 'Reach sends without asking.'
+    : power ? 'Full power is on. Reach sends an Allow message. It does not ask you to approve it.'
       : reach === 'auto' ? 'Reach sends on its own.'
         : 'Reach asks before each send.';
   const body = `
@@ -75,7 +75,7 @@ export function settingsPage(query) {
       </section>
       <section class="card">
         <h2>Lanes</h2>
-        <p class="muted">Today shows whether each lane is working. The master checks about every 20 seconds. Understand, Discover, GTM, Reach, and Trace should be on while the desk is running.</p>
+        <p class="muted"><a href="/crew">Agents</a> shows whether each lane is working. The master checks about every 20 seconds. Understand, Discover, GTM, Reach, and Trace should be on while the desk is running. Full power keeps Reach on, and it sends without an approval.</p>
         <div class="lanes">
           ${LANES.map((lane) => {
             const mode = agentMode(lane.id);
@@ -159,6 +159,7 @@ export function powerPost(req, res, fields) {
     else if (mode === 'approve' && reach !== 'auto') reach = 'approve';
     else if (mode === 'draft' && reach === 'off') reach = 'draft';
   }
+  if (turningOn) reach = 'auto';
   saveAgentMode('reach', reach, 'person');
   if (saved.running === 1 && saved.full_power === 1) {
     const campaign = newestCampaign();
@@ -213,6 +214,7 @@ export function settingsPost(res, fields) {
     else if (mode === 'approve' && reach !== 'auto') reach = 'approve';
     else if (mode === 'draft' && reach === 'off') reach = 'draft';
   }
+  if (power) reach = 'auto';
   saveAgentMode('reach', reach, 'person');
 
   if (saved.running === 1 && saved.full_power === 1) {

@@ -12,6 +12,7 @@ import { redditPublicSearch } from '../../discover/reddit.js';
 import { channelHome, discoverHints } from '../../discover/sources.js';
 import { campaignView, createCampaign, listCampaigns, setCampaignStatus } from '../../gtm/campaigns.js';
 import { profileGaps } from '../../understand/profile.js';
+import { fullPower } from '../../kernel/desk.js';
 import { canSend, channelMode } from '../../reach/gate.js';
 import { approveMessage, cancelMessage, markSent } from '../../reach/messages.js';
 import { listMessages } from '../../reach/rows.js';
@@ -134,12 +135,16 @@ export function discoverReddit(fields) {
 export function reachPage(query) {
   const open = listMessages({ open: true, limit: 20 });
   const sent = listMessages({ status: 'sent', limit: 8 });
+  const power = fullPower();
+  const intro = power
+    ? 'Full power is on. An Allow message goes out without your approval. Prepare and Off stay put. A captcha still stops that page, and the daily cap still applies.'
+    : 'Each send waits for your approval. The agent cannot approve, and it cannot change a channel mode.';
   const body = `
     ${flash(query)}
     <section class="card">
-      <h2>Waiting</h2>
-      <p class="muted">Approve is yours. The agent cannot approve, and it cannot change a channel mode. Auto, if you turned it on, still stops on a captcha and on the daily cap.</p>
-      ${open.length ? open.map(messageCard).join('') : '<p class="muted">No drafts. Discover people, then the agent writes one message at a time.</p>'}
+      <h2>${power ? 'Ready' : 'Waiting'}</h2>
+      <p class="muted">${intro}</p>
+      ${open.length ? open.map((row) => messageCard(row, power)).join('') : '<p class="muted">No drafts. Discover people, then the agent writes one message at a time.</p>'}
     </section>
     <section class="card">
       <h2>Sent</h2>
@@ -148,10 +153,13 @@ export function reachPage(query) {
   return shell({ team: 'reach', title: 'Reach', kicker: 'Reach', body });
 }
 
-function messageCard(row) {
+function messageCard(row, power) {
   const gate = canSend(row.id);
   const mode = channelMode(row.channel).mode;
-  const reason = gate.ok ? 'Ready to send.' : (ERRORS[gate.code] || gate.code);
+  const reason = gate.ok
+    ? (power ? 'Full power will send this. No approval step.' : 'Ready to send.')
+    : (ERRORS[gate.code] || gate.code);
+  const ask = !power && (row.status === 'draft' || row.status === 'awaiting_approval');
   return `<article class="card" style="margin-bottom:12px">
     <div class="row">
       <span class="chip">${esc(row.channel)}</span>
@@ -164,7 +172,7 @@ function messageCard(row) {
     <p>${esc(row.body)}</p>
     <p class="muted">${esc(reason)}${row.due_at ? ` · due ${esc(row.due_at)}` : ''}</p>
     <div class="row">
-      ${row.status === 'draft' || row.status === 'awaiting_approval' ? `<form method="post" action="/reach/approve"><input type="hidden" name="id" value="${row.id}"><button type="submit">Approve send</button></form>` : ''}
+      ${ask ? `<form method="post" action="/reach/approve"><input type="hidden" name="id" value="${row.id}"><button type="submit">Approve send</button></form>` : ''}
       ${gate.ok ? `<form method="post" action="/reach/sent"><input type="hidden" name="id" value="${row.id}"><button type="submit" class="quiet">I sent this</button></form>` : ''}
       <form method="post" action="/reach/cancel"><input type="hidden" name="id" value="${row.id}"><button type="submit" class="quiet">Cancel</button></form>
     </div>
