@@ -1,7 +1,7 @@
 // src/web/pages/today.js — Today and Understand.
 //
 // Owns: the home summary and the setup form.
-// Must not: send, approve, or change a channel mode. The other screens open from the crew graph.
+// Must not: send, approve, or change a channel mode. The side list opens the other screens.
 // Writes: business, answers, and questions, through the understand module.
 
 import { getSettings, startConsent } from '../../kernel/desk.js';

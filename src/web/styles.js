@@ -40,7 +40,7 @@ button, input, textarea, select { font: inherit; color: inherit; }
 }
 .brand { font-family: Georgia, "Iowan Old Style", serif; font-size: 28px; letter-spacing: -0.03em; }
 .brand small { display: block; margin-top: 4px; color: var(--muted); font-family: "Segoe UI", sans-serif; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
-.rail-label { margin: 8px 0 0; color: var(--muted); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+.rail-label { margin: 14px 0 0; color: var(--muted); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
 nav { display: flex; flex-direction: column; gap: 2px; }
 nav a {
   text-decoration: none;
@@ -55,7 +55,7 @@ nav a[data-team="reach"].active { box-shadow: inset 3px 0 0 var(--reach); }
 nav a[data-team="create"].active { box-shadow: inset 3px 0 0 var(--create); }
 nav a[data-team="gtm"].active { box-shadow: inset 3px 0 0 var(--gtm); }
 nav a[data-team="kernel"].active { box-shadow: inset 3px 0 0 var(--kernel); }
-.rail p { color: var(--muted); font-size: 13px; line-height: 1.45; margin-top: auto; }
+.rail p { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 14px 0 0; }
 main { padding: 28px 32px 64px; max-width: 1080px; }
 .top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-end; margin-bottom: 22px; }
 .kicker { margin: 0 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; }
@@ -181,7 +181,8 @@ pre.preview {
 .meter { display: grid; grid-template-columns: 90px 1fr 36px; gap: 8px; align-items: center; margin: 8px 0; }
 .meter-track { height: 8px; background: var(--card-2); border-radius: 999px; overflow: hidden; }
 .meter-track span { display: block; height: 100%; background: var(--reach); border-radius: 999px; }
-.crew-map { width: 100%; height: auto; display: block; background: var(--card); border: 1px solid var(--line); border-radius: 18px; margin: 16px 0; }
+.crew-scroll { overflow-x: auto; margin: 16px 0; }
+.crew-map { width: 100%; min-width: 760px; height: auto; display: block; background: var(--card); border: 1px solid var(--line); border-radius: 18px; margin: 0; }
 .crew-map .edge { stroke: #4a5340; stroke-width: 1.5; }
 .crew-map .edge.day { stroke: var(--muted); stroke-width: 2.5; }
 .crew-map .edge.hub { stroke: #6d6758; stroke-dasharray: 5 4; }

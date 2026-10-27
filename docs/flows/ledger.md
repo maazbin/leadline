@@ -28,7 +28,7 @@ Create and Virality may stay Off. That row is `off`, and it is not a fault.
 
 `fine` is true when no row is `stuck`.
 
-When Full power is on, Reach is not waiting on an approval. An Allow message can go. Prepare and Off still wait. The monitoring screen is `/crew`. It draws the lanes as a graph. Click a node to open that screen. Recent activity is a path under the graph.
+When Full power is on, Reach is not waiting on an approval. An Allow message can go. Prepare and Off still wait. The monitoring screen is `/crew`. It draws the lanes as a graph. Click a lane to open it. The other screens stay in the side list. Recent activity is a path under the graph.
 
 ## Steps
 

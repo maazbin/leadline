@@ -10,9 +10,25 @@ import { esc } from '../kernel/text.js';
 import { ERRORS, OKS, STEPS } from './copy.js';
 import { CSS } from './styles.js';
 
-const RAIL = [
+const DESK = [
   ['/', 'Today', 'kernel'],
   ['/crew', 'Crew', 'kernel'],
+  ['/plan', 'Plan', 'kernel'],
+  ['/questions', 'Questions', 'kernel'],
+  ['/persona', 'Persona', 'kernel'],
+  ['/trends', 'Trends', 'kernel'],
+  ['/results', 'Results', 'kernel'],
+  ['/tracking', 'Tracking', 'kernel'],
+];
+
+const WORK = [
+  ['/setup', 'Understand', 'understand'],
+  ['/discover', 'Discover', 'discover'],
+  ['/reach', 'Reach', 'reach'],
+  ['/create', 'Create', 'create'],
+  ['/gtm', 'GTM', 'gtm'],
+  ['/browser', 'Browser', 'kernel'],
+  ['/learn', 'Memory', 'kernel'],
   ['/settings', 'Settings', 'kernel'],
 ];
 
@@ -82,8 +98,10 @@ export function shell(page) {
   <div class="app">
     <aside class="rail">
       <div class="brand">Leadline<small>Local go-to-market</small></div>
-      <nav>${navLinks(RAIL, page)}</nav>
-      <p>Today is the next step. Crew is the graph. Settings holds the switches.</p>
+      <p class="rail-label">Desk</p>
+      <nav>${navLinks(DESK, page)}</nav>
+      <p class="rail-label">Work</p>
+      <nav>${navLinks(WORK, page)}</nav>
     </aside>
     <main>
       <header class="top">

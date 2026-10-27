@@ -33,7 +33,7 @@ When it is off, Reach asks before each send.
 
 ## The desk
 
-The rail is three doors: Today, Crew, and Settings. Today holds the next step. Crew is a graph. The master sits in the middle, and the day runs Understand, GTM, Discover, Reach, then Trace. Create and Virality sit beside that path. Click a node and that screen opens on its own: the plan, the questions, the persona, the trends, the results, the tracking, and the work. Each screen is one file, so the agent reads that slice and leaves the rest of the desk alone. About every 20 seconds the master checks the crew. A node says Working, Waiting on you, Needs a look, Off, or Paused. Under the graph, what just happened is a short path.
+Every screen stays in the list on the left. Today holds the next step. Crew is a graph of the lanes: Understand, GTM, Discover, Reach, then Trace, with Create and Virality beside that path. Plan, Questions, Persona, Trends, Results, Tracking, and the work each open on their own screen. Each screen is one file, so the agent reads that slice and leaves the rest of the desk alone. About every 20 seconds the master checks the crew. A node says Working, Waiting on you, Needs a look, Off, or Paused. Under the graph, what just happened is a short path.
 
 <p align="center">
   <img src="docs/screenshots/today.png" alt="Today. Full power is on, and one message can go out." width="980">

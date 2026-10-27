@@ -309,8 +309,10 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     const desk = await (await fetch(`${origin}/`)).text();
     assert.match(desk, /Open the crew/);
     assert.match(desk, /href="\/crew"/);
+    assert.match(desk, /href="\/plan"/);
+    assert.match(desk, /href="\/persona"/);
+    assert.match(desk, /href="\/setup"/);
     assert.doesNotMatch(desk, /Where it stuck/);
-    assert.doesNotMatch(desk, /href="\/plan"/);
     const crew = await (await fetch(`${origin}/crew`)).text();
     assert.match(crew, /<svg class="crew-map"/);
     assert.match(crew, /The master checked the crew/);
@@ -493,7 +495,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
       await page.locator('aside').getByRole('link', { name: 'Crew', exact: true }).click();
       await page.waitForURL(/\/crew$/);
       assert.match(await page.locator('body').innerText(), /The crew/);
-      await page.locator('.crew-map a[href="/plan"]').click();
+      await page.locator('aside').getByRole('link', { name: 'Plan', exact: true }).click();
       await page.waitForURL(/\/plan$/);
       assert.match(await page.locator('body').innerText(), /Today's plan/);
       await page.goto(`${origin}/reach`);
