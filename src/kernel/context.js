@@ -14,6 +14,7 @@ import { listLeads } from '../discover/leads.js';
 import { campaignView } from '../gtm/campaigns.js';
 import { dueFollowups } from '../reach/followups.js';
 import { getSettings, listAgents } from './desk.js';
+import { listLedger } from './ledger.js';
 import { listPermissions } from '../reach/gate.js';
 import { listMessages } from '../reach/rows.js';
 import { getBusiness, listAnswers, openQuestions, profileGaps } from '../understand/profile.js';
@@ -64,6 +65,9 @@ function home() {
   return {
     plan: { flow: step.flow, step: step.step, tool: step.tool, why: step.why, url: step.url },
     counts: dashboard(),
+    crew: listLedger().map((row) => ({
+      agent: row.agent, status: row.status, required: row.required, detail: clip(row.detail, 180),
+    })),
     stalls: listStalls('open').map((row) => ({
       id: row.id, code: row.code, step: row.step, ref: row.ref, detail: clip(row.detail, 240),
     })),

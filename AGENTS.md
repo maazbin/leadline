@@ -27,9 +27,11 @@ Do not tell the person to run npm, open a terminal, or click Run. You do that.
 ## Every session
 
 1. Call `next_action`.
-2. Read only the `slice` it names, with `context_slice`.
+2. Read only the `slice` it names, with `context_slice`. The `home` slice includes `crew`.
 3. Do that one step.
 4. Call `next_action` again.
+
+The desk reviews the crew ledger about every 20 seconds, and once when it starts. Call `review_ledger` if you need the check now. `fine` is false when a row is `stuck`. A stuck required lane comes before a new search. You cannot turn a lane on. Name the Settings switch and wait. Do not send just because Reach is stuck. Required while Run is on: Understand, Discover, GTM, Reach, Trace. Create and Virality may stay off. Read `docs/flows/ledger.md`.
 
 `lane` `create` is the content team. It never sends. The default lane is the pipeline: Understand, then a campaign the person starts, then Discover, then Reach.
 
@@ -45,6 +47,7 @@ Until `onboard_status` reports no gaps, the only work is understanding the busin
 | Create | `src/create/` | `docs/flows/create.md` | Draft a post | Publish it |
 | GTM | `src/gtm/` | `docs/flows/gtm.md` | Create a draft campaign | Press Start |
 | Trace | `src/trace/` | `docs/flows/trace.md` | Record where the run stopped | Send, or clear a stall that is still true |
+| Master ledger | `src/kernel/ledger.js` | `docs/flows/ledger.md` | Review the crew and read who is stuck | Send, or change a lane mode |
 
 Browser memory is `src/browser/` and `docs/flows/browser.md`. Paths live in SQLite. Follow `reached` and `success`. Do not follow `stop` or `refused`.
 
@@ -56,8 +59,20 @@ Browser memory is `src/browser/` and `docs/flows/browser.md`. Paths live in SQLi
 
 Read `CODING_STANDARDS.md` and the flow doc for the team you touch. Add a migration for a schema change. Do not edit `001_init.sql` after a real database exists. Run `npm test`. Do not commit `data/`.
 
+## Landing a change
+
+Main is protected. A direct push is rejected. Follow `docs/flows/ship.md`.
+
+1. Branch from `main`. Do not commit on `main`.
+2. Open a pull request into `main`.
+3. Wait until the check named `test` is green. That job is `.github/workflows/test.yml` and it runs `npm test`.
+4. Merge the pull request. A finished green pull request does not stay open.
+5. Do not force-push `main`, delete `main`, or turn the ruleset off.
+
+No review approval is required. A red `test` check blocks the merge. Fix the branch.
+
 ## Tools
 
-`begin` `next_action` `context_slice` `onboard_status` `open_setup` `read_website` `get_profile` `add_materials` `add_pdf` `read_source` `fill_profile` `list_answers` `find_answer` `learn_answer` `ask_person` `discover_hints` `reddit_search` `save_lead` `list_leads` `search_leads` `set_lead_fit` `set_lead_outcome` `draft_message` `list_messages` `request_approval` `cancel_message` `schedule_followup` `list_due_followups` `prepare_message` `execute_send` `create_campaign` `campaign_view` `create_content` `launch_chrome` `browser_open` `browser_snapshot` `browser_click` `browser_type` `record_encounter` `resolve_encounter` `path_lookup` `path_record` `desk_status` `list_strategies` `next_strategy` `record_strategy` `trace_stalls`
+`begin` `next_action` `context_slice` `onboard_status` `open_setup` `read_website` `get_profile` `add_materials` `add_pdf` `read_source` `fill_profile` `list_answers` `find_answer` `learn_answer` `ask_person` `discover_hints` `reddit_search` `save_lead` `list_leads` `search_leads` `set_lead_fit` `set_lead_outcome` `draft_message` `list_messages` `request_approval` `cancel_message` `schedule_followup` `list_due_followups` `prepare_message` `execute_send` `create_campaign` `campaign_view` `create_content` `launch_chrome` `browser_open` `browser_snapshot` `browser_click` `browser_type` `record_encounter` `resolve_encounter` `path_lookup` `path_record` `desk_status` `list_strategies` `next_strategy` `record_strategy` `trace_stalls` `review_ledger`
 
 There is no approve tool. `begin` is the only start. The person answers you once. You run npm.

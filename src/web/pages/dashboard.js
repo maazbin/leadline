@@ -14,6 +14,7 @@ import { esc } from '../../kernel/text.js';
 import { getBusiness, listAnswers, openQuestions } from '../../understand/profile.js';
 import { listSources } from '../../understand/sources.js';
 import { redirect } from '../http.js';
+import { LEDGER_LABEL, ledgerSummary, listLedger } from '../../kernel/ledger.js';
 import { listStalls, STALL_LABEL } from '../../trace/stalls.js';
 import { flash } from '../layout.js';
 
@@ -67,6 +68,27 @@ export function deskBody(query, todayHtml) {
           : tab === 'results' ? resultsPanel()
             : trackingPanel();
   return { tabs: deskTabs(tab), body: `${flash(query)}${panel}` };
+}
+
+/** The master's last review of the crew. Reads the ledger. Does not review again. */
+export function crewSection() {
+  const lanes = listLedger();
+  const checked = lanes.find((row) => row.reviewedAt);
+  const whenChecked = checked ? when(checked.reviewedAt) : '';
+  const lines = lanes.filter((row) => row.status).map((row) => `<li>
+        <strong>${esc(row.label)}</strong>${row.required ? ' <span class="muted">Required</span>' : ''}
+        — ${esc(LEDGER_LABEL[row.status] || row.status)}
+        <div class="muted">${esc(row.job)} ${esc(row.detail)}</div>
+      </li>`).join('');
+  const intro = whenChecked
+    ? `The master checked the crew at ${whenChecked}. Required lanes are Understand, Discover, GTM, Reach, and Trace. Create and Virality may stay off.`
+    : 'The master has not checked the crew yet. The check runs about every 20 seconds while the desk is open.';
+  return `<section class="card">
+      <h2>Crew</h2>
+      <p class="muted">${esc(intro)}</p>
+      <p>${esc(ledgerSummary(lanes))}</p>
+      ${lines ? `<ul class="log">${lines}</ul>` : ''}
+    </section>`;
 }
 
 /** Open stalls from Trace. Empty when the run can move. */
@@ -327,6 +349,7 @@ function trackingPanel() {
       ${stat('Campaigns', counts.campaigns)}
       ${stat('Stuck pages', counts.encounters)}
     </section>
+    ${crewSection()}
     ${stallSection()}
     <section class="card">
       <h2>Platforms today</h2>
@@ -381,6 +404,7 @@ function activity(row) {
   if (row.kind === 'plan') return `Plan ${row.detail}`;
   if (row.kind === 'stall') return `Trace: ${STALL_LABEL[row.detail] || row.detail}`;
   if (row.kind === 'stall_cleared') return 'Trace cleared a stall';
+  if (row.kind === 'ledger') return row.detail === 'crew fine' ? 'Master checked the crew' : `Master check: ${row.detail}`;
   const detail = row.detail ? ` — ${row.detail}` : '';
   return `${row.team} ${row.kind}${detail}`;
 }

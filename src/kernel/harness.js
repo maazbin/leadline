@@ -1,6 +1,6 @@
 // src/kernel/harness.js — the master loop. One process, one send, then a gap.
 //
-// Owns: the timer that keeps a Run desk moving.
+// Owns: the timer that keeps a Run desk moving, and the crew review on that timer.
 // Must not: start when Run is off, send when Reach is off, or send a second message in one tick.
 // Must not: solve a captcha. execute_send already stops on one.
 // A linked-in write waits longer than an email. That gap is how accounts stay unblocked.
@@ -13,6 +13,7 @@ import { newestCampaign, setCampaignStatus } from '../gtm/campaigns.js';
 import { canSend } from '../reach/gate.js';
 import { listMessages } from '../reach/rows.js';
 import { executeSend } from '../browser/act.js';
+import { reviewLedger } from './ledger.js';
 import { syncStalls } from '../trace/stalls.js';
 
 const GAPS = {
@@ -48,9 +49,14 @@ function markPace(channel) {
   );
 }
 
-function rememberStall() {
+function masterPass() {
   try {
     syncStalls();
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err);
+  }
+  try {
+    reviewLedger();
   } catch (err) {
     console.error(err instanceof Error ? err.message : err);
   }
@@ -61,7 +67,7 @@ export async function tick() {
   try {
     return await tickOnce();
   } finally {
-    rememberStall();
+    masterPass();
   }
 }
 
@@ -90,7 +96,7 @@ async function tickOnce() {
 /** Start the loop for this server. A second call does nothing. */
 export function bindHarness(server) {
   if (timer) return;
-  rememberStall();
+  masterPass();
   const beat = () => {
     tick().catch((err) => {
       console.error(err instanceof Error ? err.message : err);

@@ -18,6 +18,7 @@ import { contextSlice } from '../kernel/context.js';
 import { begin, getSettings, listAgents, startConsent } from '../kernel/desk.js';
 import { listStrategies, nextStrategy, recordStrategy } from '../kernel/strategies.js';
 import { nextAction } from '../kernel/flows.js';
+import { reviewLedger } from '../kernel/ledger.js';
 import { webOrigin } from '../kernel/ports.js';
 import { clip } from '../kernel/text.js';
 import { listPermissions } from '../reach/gate.js';
@@ -37,7 +38,7 @@ const OPEN = new Set([
   'learn_answer', 'list_answers', 'find_answer', 'ask_person', 'launch_chrome', 'browser_open',
   'browser_snapshot', 'browser_click', 'browser_type', 'record_encounter', 'resolve_encounter',
   'path_lookup', 'path_record', 'desk_status', 'list_strategies', 'next_strategy', 'record_strategy',
-  'begin',
+  'begin', 'review_ledger',
 ]);
 
 const schema = {
@@ -423,6 +424,12 @@ export const TOOLS = [
       id: { type: 'string' }, result: { type: 'string', enum: ['worked', 'failed', 'open'] }, evidence: { type: 'string' },
     }, ['id', 'result']),
     handler: ({ id, result, evidence }) => recordStrategy(String(id), String(result), String(evidence || ''), 'agent'),
+  },
+  {
+    name: 'review_ledger',
+    description: 'Master check of the crew. Rewrites one row per lane: working, waiting, stuck, off, or paused. Does not send or change a switch. Read stuck before starting new work.',
+    inputSchema: schema,
+    handler: () => reviewLedger(),
   },
   {
     name: 'trace_stalls',

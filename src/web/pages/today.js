@@ -11,7 +11,7 @@ import { plan } from '../../kernel/flows.js';
 import { dashboard } from '../../kernel/stats.js';
 import { esc } from '../../kernel/text.js';
 import { answerQuestion, getBusiness, openQuestions, profileGaps, saveBusiness } from '../../understand/profile.js';
-import { deskBody, deskTab, deskTitle, stallSection } from './dashboard.js';
+import { crewSection, deskBody, deskTab, deskTitle, stallSection } from './dashboard.js';
 import { addLinks, addPdf, listSources, readSource } from '../../understand/sources.js';
 import { listPages, readWebsite } from '../../understand/website.js';
 import { STEPS } from '../copy.js';
@@ -67,6 +67,7 @@ function todayPanel() {
         <span class="muted">Agent tool: ${esc(step.tool || 'none — waiting on you')}</span>
       </div>
     </section>
+    ${crewSection()}
     ${stallSection()}
     <section class="grid stats">
       ${stat('Leads', counts.leads)}
@@ -116,6 +117,7 @@ function activity(row) {
   if (row.kind === 'plan') return `Plan ${row.detail}`;
   if (row.kind === 'stall') return `Trace: ${row.detail === 'no_message' ? 'no message written' : row.detail === 'composer' ? 'note not in the box' : row.detail}`;
   if (row.kind === 'stall_cleared') return 'Trace cleared a stall';
+  if (row.kind === 'ledger') return row.detail === 'crew fine' ? 'Master checked the crew' : `Master check: ${row.detail}`;
   const detail = row.detail ? ` — ${row.detail}` : '';
   return `${row.team} ${row.kind}${detail}`;
 }

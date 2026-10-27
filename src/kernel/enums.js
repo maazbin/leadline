@@ -35,6 +35,21 @@ export const LANES = [
 
 export const LANE_IDS = ['reach', ...LANES.map((lane) => lane.id)];
 
+/**
+ * Crew the master reviews, in pipeline order.
+ * required: the desk expects this lane on while Run is on.
+ * Create and Virality may stay off.
+ */
+export const CREW = [
+  { id: 'understand', label: 'Understand', job: 'Learns what you sell from your form, site, and signed-in profiles.', required: true },
+  { id: 'discover', label: 'Discover', job: 'Finds people and marks who fits.', required: true },
+  { id: 'gtm', label: 'GTM', job: 'Keeps the campaign and the follow-up delay.', required: true },
+  { id: 'reach', label: 'Reach', job: 'Writes one note and sends one message.', required: true },
+  { id: 'create', label: 'Create', job: 'Writes posts. You publish them.', required: false },
+  { id: 'virality', label: 'Virality', job: 'Tries one pattern at a time. It does not post.', required: false },
+  { id: 'trace', label: 'Trace', job: 'Writes down where the run stopped.', required: true },
+];
+
 /** Playbook name for a channel. */
 export const CHANNEL_PLATFORM = {
   email: 'Email',
@@ -64,6 +79,9 @@ export const ENCOUNTER_KINDS = ['captcha', 'login', 'stuck', 'error'];
 
 /** Why Trace says the run cannot move. */
 export const STALL_CODES = ['no_message', 'composer'];
+
+/** What the master writes on the crew ledger. */
+export const LEDGER_STATUSES = ['working', 'waiting', 'stuck', 'off', 'paused'];
 
 /**
  * @param {string[]} allowed

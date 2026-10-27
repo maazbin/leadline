@@ -59,6 +59,8 @@ The green bar at the top of every page is the throttle. **Full power** is on, or
 
 Each lane has its own permission: Off, Prepare, Ask first, or On. Reach is the only one that sends.
 
+The master checks this crew about every 20 seconds and writes the result on Today. Understand, Discover, GTM, Reach, and Trace should be on while the desk is running. Create and Virality may stay off. A lane that cannot do its job shows as **Needs a look**, with the reason in a sentence.
+
 ## 🎛 What you control
 
 - ⚡ **Full power**, the bar under the title. On means Allow platforms send without a question each time.
@@ -103,6 +105,8 @@ npm start
 ```
 
 Open [http://127.0.0.1:7791](http://127.0.0.1:7791). State lives in `data/leadline.db`. That folder is gitignored. Screenshots of stuck pages land in `data/encounters/`.
+
+A change goes through a pull request. The Test check has to pass. Main rejects a direct push.
 
 Tell the agent one of these:
 

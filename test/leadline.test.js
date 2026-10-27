@@ -56,7 +56,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
 
     getDb();
     getDb();
-    assert.deepEqual(all('SELECT id FROM schema_migrations').map((row) => row.id), ['001_init.sql', '002_desk.sql', '003_sources.sql', '004_plan.sql', '005_trace.sql']);
+    assert.deepEqual(all('SELECT id FROM schema_migrations').map((row) => row.id), ['001_init.sql', '002_desk.sql', '003_sources.sql', '004_plan.sql', '005_trace.sql', '006_ledger.sql']);
     const perms = listPermissions();
     assert.equal(perms.length, 9);
     assert.ok(perms.every((row) => row.mode === 'draft'));
@@ -268,6 +268,22 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
       assert.equal(names.includes(forbidden), false, forbidden);
     }
     assert.equal(names.includes('trace_stalls'), true);
+    assert.equal(names.includes('review_ledger'), true);
+    const { reviewLedger } = await import('../src/kernel/ledger.js');
+    const { saveAgentMode } = await import('../src/kernel/desk.js');
+    const looked = reviewLedger();
+    assert.equal(looked.ok, true);
+    assert.equal(looked.lanes.length, 7);
+    assert.equal(looked.fine, true);
+    assert.equal(saveAgentMode('trace', 'off', 'person').ok, true);
+    const missed = reviewLedger();
+    assert.equal(missed.fine, false);
+    assert.equal(missed.lanes.find((row) => row.agent === 'trace').status, 'stuck');
+    assert.match(missed.lanes.find((row) => row.agent === 'trace').detail, /Turn it on in Settings/);
+    assert.equal(saveAgentMode('trace', 'auto', 'person').ok, true);
+    const healed = reviewLedger();
+    assert.equal(healed.lanes.find((row) => row.agent === 'trace').status, 'working');
+    assert.equal(healed.fine, true);
     assert.equal((await callTool('approve_message', { id: 1 })).code, 'unknown_tool');
     assert.equal((await callTool('save_lead', {})).code === 'needs_profile' || (await callTool('save_lead', {})).code === 'bad_source', true);
 
@@ -288,6 +304,9 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     const desk = await (await fetch(`${origin}/`)).text();
     assert.match(desk, /role="tablist"/);
     assert.match(desk, /Where it stuck/);
+    assert.match(desk, /Crew/);
+    assert.match(desk, /The master checked the crew/);
+    assert.match(desk, /The required lanes are working/);
     assert.match(desk, /Nothing is stuck/);
     assert.match(desk, /href="\/\?tab=persona"/);
     assert.match(desk, /href="\/\?tab=trends"/);
