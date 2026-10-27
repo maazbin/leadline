@@ -181,6 +181,27 @@ pre.preview {
 .meter { display: grid; grid-template-columns: 90px 1fr 36px; gap: 8px; align-items: center; margin: 8px 0; }
 .meter-track { height: 8px; background: var(--card-2); border-radius: 999px; overflow: hidden; }
 .meter-track span { display: block; height: 100%; background: var(--reach); border-radius: 999px; }
+.front-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 8px 0 22px; }
+.door {
+  text-decoration: none;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px 16px 16px 18px;
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.door strong { font-family: Georgia, "Iowan Old Style", serif; font-size: 22px; font-weight: 500; letter-spacing: -0.03em; }
+.door span { color: var(--muted); }
+.door:hover, .door:focus { border-color: var(--text); }
+.door[data-team="understand"] { box-shadow: inset 3px 0 0 var(--understand); }
+.door[data-team="discover"] { box-shadow: inset 3px 0 0 var(--discover); }
+.door[data-team="reach"] { box-shadow: inset 3px 0 0 var(--reach); }
+.door[data-team="create"] { box-shadow: inset 3px 0 0 var(--create); }
+.door[data-team="gtm"] { box-shadow: inset 3px 0 0 var(--gtm); }
+.door[data-team="kernel"] { box-shadow: inset 3px 0 0 var(--kernel); }
 .crew-scroll { overflow-x: auto; margin: 16px 0; }
 .crew-map { width: 100%; min-width: 760px; height: auto; display: block; background: var(--card); border: 1px solid var(--line); border-radius: 18px; margin: 0; }
 .crew-map .edge { stroke: #4a5340; stroke-width: 1.5; }
@@ -208,7 +229,7 @@ pre.preview {
 @media (max-width: 980px) {
   .app { grid-template-columns: 1fr; }
   .rail { border-right: 0; border-bottom: 1px solid var(--line); }
-  .grid, .grid5, .split, .lanes, .platform, .powerbar, .persona, .kv, .statgrid, .plan-item { grid-template-columns: 1fr; }
+  .grid, .grid5, .split, .lanes, .platform, .powerbar, .persona, .kv, .statgrid, .plan-item, .front-grid { grid-template-columns: 1fr; }
   .powerbar { flex-direction: column; align-items: stretch; }
   .powerbar h2 { font-size: 28px; }
   main { padding: 20px 16px 48px; }

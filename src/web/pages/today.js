@@ -1,13 +1,14 @@
 // src/web/pages/today.js — Today and Understand.
 //
 // Owns: the home summary and the setup form.
-// Must not: send, approve, or change a channel mode. The side list opens the other screens.
+// Must not: send, approve, or change a channel mode. The front shows the graph and a door for every screen.
 // Writes: business, answers, and questions, through the understand module.
 
-import { getSettings, startConsent } from '../../kernel/desk.js';
+import { fullPower, getSettings, startConsent } from '../../kernel/desk.js';
 import { plan } from '../../kernel/flows.js';
 import { ledgerSummary, listLedger } from '../../kernel/ledger.js';
 import { esc } from '../../kernel/text.js';
+import { crewMap } from '../crew-map.js';
 import { answerQuestion, getBusiness, openQuestions, profileGaps, saveBusiness } from '../../understand/profile.js';
 import { addLinks, addPdf, listSources, readSource } from '../../understand/sources.js';
 import { listPages, readWebsite } from '../../understand/website.js';
@@ -39,11 +40,30 @@ export function homePage(query) {
   });
 }
 
+const DOORS = [
+  ['/plan', 'Plan', "Today's lines", 'kernel'],
+  ['/questions', 'Questions', 'Answers', 'kernel'],
+  ['/persona', 'Persona', 'Who it is for', 'kernel'],
+  ['/trends', 'Trends', 'Charts', 'kernel'],
+  ['/results', 'Results', 'What worked', 'kernel'],
+  ['/tracking', 'Tracking', 'Counts and the log', 'kernel'],
+  ['/crew', 'Crew', 'Open the crew', 'kernel'],
+  ['/setup', 'Understand', 'What you sell', 'understand'],
+  ['/discover', 'Discover', 'Who to talk to', 'discover'],
+  ['/reach', 'Reach', 'One message', 'reach'],
+  ['/create', 'Create', 'Posts you publish', 'create'],
+  ['/gtm', 'GTM', 'The campaign', 'gtm'],
+  ['/browser', 'Browser', 'The signed-in Chrome', 'kernel'],
+  ['/learn', 'Memory', 'Walls and the playbook', 'kernel'],
+  ['/settings', 'Settings', 'Run and the switches', 'kernel'],
+];
+
 function todayPanel() {
   const step = plan();
   const settings = getSettings();
   const running = Number(settings.running) === 1;
   const adapt = Number(settings.adaptability) === 1;
+  const doors = DOORS.map(([href, label, text, team]) => `<a class="door" data-team="${team}" href="${href}"><strong>${esc(label)}</strong><span>${esc(text)}</span></a>`).join('');
   return `
     <section class="status">
       <span class="pill ${running ? 'on' : ''}">${running ? 'Running' : 'Stopped'}</span>
@@ -53,12 +73,18 @@ function todayPanel() {
       <p class="kicker">${esc(step.flow)}</p>
       <h2>${esc(STEPS[step.step] || step.step)}</h2>
       <p>${esc(step.why)}</p>
-      <div class="row">
-        ${step.url ? `<a class="button" href="${esc(step.url)}">Open this step</a>` : ''}
-        <a class="button quiet" href="/crew">Open the crew</a>
-      </div>
+      ${step.url ? `<div class="row"><a class="button" href="${esc(step.url)}">Open this step</a></div>` : ''}
     </section>
-    <p class="muted">${esc(ledgerSummary(listLedger()))} The graph shows each lane and the screen it opens.</p>`;
+    <section>
+      <h2>The crew</h2>
+      <p class="muted">${esc(ledgerSummary(listLedger()))}</p>
+      ${crewMap(fullPower())}
+      <p class="legend"><span class="working">Working</span><span class="waiting">Waiting on you</span><span class="stuck">Needs a look</span><span class="off">Off</span><span class="paused">Paused</span></p>
+    </section>
+    <section>
+      <h2>Open</h2>
+      <div class="front-grid">${doors}</div>
+    </section>`;
 }
 
 /**
