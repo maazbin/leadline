@@ -12,7 +12,7 @@ import { esc } from '../../kernel/text.js';
 import { redirect } from '../http.js';
 import { flash, shell } from '../layout.js';
 
-const SIMPLE = new Set(['understand', 'discover', 'gtm']);
+const SIMPLE = new Set(['understand', 'discover', 'gtm', 'trace']);
 
 /**
  * @param {string} lane
@@ -75,6 +75,7 @@ export function settingsPage(query) {
       </section>
       <section class="card">
         <h2>Lanes</h2>
+        <p class="muted">Today shows whether each lane is working. The master checks about every 20 seconds. Understand, Discover, GTM, Reach, and Trace should be on while the desk is running.</p>
         <div class="lanes">
           ${LANES.map((lane) => {
             const mode = agentMode(lane.id);

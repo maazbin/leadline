@@ -33,3 +33,12 @@ export function recentEvents(limit = 8) {
   const cap = Math.min(30, Math.max(1, limit));
   return all('SELECT * FROM events ORDER BY id DESC LIMIT ?', cap);
 }
+
+/**
+ * The longer log on the desk. Still capped.
+ * @param {number} [limit]
+ */
+export function listEvents(limit = 40) {
+  const cap = Math.min(80, Math.max(1, limit));
+  return all('SELECT at, team, kind, ref, detail FROM events ORDER BY id DESC LIMIT ?', cap);
+}

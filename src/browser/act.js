@@ -9,6 +9,7 @@ import { clip } from '../kernel/text.js';
 import { canSend } from '../reach/gate.js';
 import { markSent } from '../reach/messages.js';
 import { getMessage } from '../reach/rows.js';
+import { recordStall } from '../trace/stalls.js';
 import { isSendControl } from './blockers.js';
 import { recordEncounter } from './encounters.js';
 import { getPage, pace, snapshot } from './session.js';
@@ -166,6 +167,14 @@ export async function prepareMessage(messageId) {
   };
 }
 
+/**
+ * A social prepare opens the page and does not type. Send stays unclicked.
+ * @param {{ ok?: boolean, prepared?: boolean }} prepared
+ */
+export function sendBlockedUntilTyped(prepared) {
+  return Boolean(prepared && prepared.ok && prepared.prepared === false);
+}
+
 const SEND_LABEL = {
   email: 'Send',
   linkedin: 'Send',
@@ -189,6 +198,20 @@ export async function executeSend(messageId) {
   const msg = gate.message;
   const prepared = await prepareMessage(msg.id);
   if (!prepared.ok) return prepared;
+  if (sendBlockedUntilTyped(prepared)) {
+    recordStall({
+      code: 'composer',
+      flow: 'reach',
+      step: 'send_one',
+      ref: String(msg.id),
+      detail: `${msg.channel} is open. The note is not in the box, so Send was not clicked.`,
+    });
+    return {
+      ok: false,
+      code: 'composer_empty',
+      detail: 'The page is open and the note is not in the box. Send was not clicked.',
+    };
+  }
   const snap = prepared.snapshot || await snapshot();
   if (snap.blocker === 'captcha' || snap.blocker === 'login') return stopForWall(snap, snap.blocker, 'send');
   if (msg.channel === 'email') {

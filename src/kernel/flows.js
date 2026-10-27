@@ -274,7 +274,7 @@ function mainPlan(origin) {
       leadId: naked.id,
       url: `${origin}/reach`,
       slice: 'profile',
-      why: 'Draft one first message for this lead. Leave it as a draft. Use only facts from the profile. Do not invent proof, prices, or customers.',
+      why: 'Draft one first message for this lead. Leave it as a draft. Use only facts from the profile. Do not invent proof, prices, or customers. Trace keeps a stall on this lead until the draft exists.',
     });
   }
 

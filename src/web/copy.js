@@ -64,6 +64,7 @@ export const ERRORS = {
 
 export const OKS = {
   saved: 'Saved.',
+  plan: 'Plan saved.',
   materials: 'Saved. Social profiles are read only after you are signed in on the Leadline Chrome.',
   desk: 'Settings saved. Full power sends on Allow platforms without asking.',
   power_on: 'Full power is on. Email, LinkedIn, and X send without asking.',

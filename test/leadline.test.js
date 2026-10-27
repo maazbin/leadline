@@ -47,7 +47,8 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     const { contextSlice } = await import('../src/kernel/context.js');
     const { pathRecord, pathLookup } = await import('../src/browser/paths.js');
     const { classifyBlocker } = await import('../src/browser/blockers.js');
-    const { executeSend } = await import('../src/browser/act.js');
+    const { executeSend, sendBlockedUntilTyped } = await import('../src/browser/act.js');
+    const { listStalls, recordStall, syncStalls } = await import('../src/trace/stalls.js');
     const { callTool, toolNames } = await import('../src/mcp/tools.js');
     const { CHANNELS } = await import('../src/kernel/enums.js');
     const { startServer } = await import('../src/web/server.js');
@@ -55,7 +56,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
 
     getDb();
     getDb();
-    assert.deepEqual(all('SELECT id FROM schema_migrations').map((row) => row.id), ['001_init.sql', '002_desk.sql', '003_sources.sql']);
+    assert.deepEqual(all('SELECT id FROM schema_migrations').map((row) => row.id), ['001_init.sql', '002_desk.sql', '003_sources.sql', '004_plan.sql', '005_trace.sql', '006_ledger.sql']);
     const perms = listPermissions();
     assert.equal(perms.length, 9);
     assert.ok(perms.every((row) => row.mode === 'draft'));
@@ -181,8 +182,16 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(plan().step, 'qualify');
     setFit(first.id, 'yes', 'Sells to the same buyers');
     assert.equal(plan().step, 'draft');
+    assert.equal(sendBlockedUntilTyped({ ok: true, prepared: false }), true);
+    assert.equal(sendBlockedUntilTyped({ ok: true, prepared: true }), false);
+    const traced = syncStalls();
+    assert.equal(traced.ok, true);
+    assert.equal(listStalls('open').some((row) => row.code === 'no_message' && row.ref === String(first.id)), true);
+    assert.match(listStalls('open')[0].detail, /Ada is marked yes and has no message/);
 
     const draft = draftMessage({ leadId: first.id, channel: 'email', subject: 'Desk', body: 'Ada, the desk keeps the send behind your approval.' });
+    syncStalls();
+    assert.equal(listStalls('open').some((row) => row.code === 'no_message'), false);
     assert.equal(draft.ok, true);
     assert.equal(plan().step, 'permission');
     assert.equal((await executeSend(draft.id)).code, 'permission');
@@ -197,7 +206,14 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(canSend(draft.id).ok, true);
     assert.equal(plan().tool, 'execute_send');
     assert.equal((await executeSend(draft.id)).code, 'browser_disabled');
+    assert.equal(recordStall({
+      code: 'composer', flow: 'reach', step: 'send_one', ref: String(draft.id),
+      detail: 'email is open. The note is not in the box, so Send was not clicked.',
+    }).ok, true);
+    assert.equal(listStalls('open').some((row) => row.code === 'composer' && row.ref === String(draft.id)), true);
     const sent = markSent(draft.id);
+    syncStalls();
+    assert.equal(listStalls('open').some((row) => row.code === 'composer'), false);
     assert.equal(sent.ok, true);
     assert.equal(canSend(draft.id).code, 'already_sent');
     assert.equal(sent.followup.ok, true);
@@ -251,6 +267,23 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     for (const forbidden of ['approve_message', 'set_channel_mode', 'set_permission', 'mark_sent', 'set_campaign_status', 'set_content_status']) {
       assert.equal(names.includes(forbidden), false, forbidden);
     }
+    assert.equal(names.includes('trace_stalls'), true);
+    assert.equal(names.includes('review_ledger'), true);
+    const { reviewLedger } = await import('../src/kernel/ledger.js');
+    const { saveAgentMode } = await import('../src/kernel/desk.js');
+    const looked = reviewLedger();
+    assert.equal(looked.ok, true);
+    assert.equal(looked.lanes.length, 7);
+    assert.equal(looked.fine, true);
+    assert.equal(saveAgentMode('trace', 'off', 'person').ok, true);
+    const missed = reviewLedger();
+    assert.equal(missed.fine, false);
+    assert.equal(missed.lanes.find((row) => row.agent === 'trace').status, 'stuck');
+    assert.match(missed.lanes.find((row) => row.agent === 'trace').detail, /Turn it on in Settings/);
+    assert.equal(saveAgentMode('trace', 'auto', 'person').ok, true);
+    const healed = reviewLedger();
+    assert.equal(healed.lanes.find((row) => row.agent === 'trace').status, 'working');
+    assert.equal(healed.fine, true);
     assert.equal((await callTool('approve_message', { id: 1 })).code, 'unknown_tool');
     assert.equal((await callTool('save_lead', {})).code === 'needs_profile' || (await callTool('save_lead', {})).code === 'bad_source', true);
 
@@ -268,6 +301,65 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(posted.status, 303);
     const savedPage = await fetch(`${origin}/setup`);
     assert.match(await savedPage.text(), /Harbor Studio/);
+    const desk = await (await fetch(`${origin}/`)).text();
+    assert.match(desk, /role="tablist"/);
+    assert.match(desk, /Where it stuck/);
+    assert.match(desk, /Crew/);
+    assert.match(desk, /The master checked the crew/);
+    assert.match(desk, /The required lanes are working/);
+    assert.match(desk, /Nothing is stuck/);
+    assert.match(desk, /href="\/\?tab=persona"/);
+    assert.match(desk, /href="\/\?tab=trends"/);
+    const persona = await (await fetch(`${origin}/?tab=persona`)).text();
+    assert.match(persona, /Harbor Studio/);
+    assert.match(persona, /Founders of small software firms/);
+    const questions = await (await fetch(`${origin}/?tab=questions`)).text();
+    assert.match(questions, /Who it is for/);
+    assert.match(questions, /A desk that keeps outreach/);
+    const trends = await (await fetch(`${origin}/?tab=trends`)).text();
+    assert.match(trends, /<svg/);
+    const results = await (await fetch(`${origin}/?tab=results`)).text();
+    assert.match(results, /What worked/);
+    assert.match(results, /What did not work/);
+    const tracking = await (await fetch(`${origin}/?tab=tracking`)).text();
+    assert.match(tracking, /Platforms today/);
+    assert.match(tracking, /Where it stuck/);
+    const planPage = await (await fetch(`${origin}/?tab=plan`)).text();
+    assert.match(planPage, /Today's plan/);
+    assert.match(planPage, /Nothing planned yet/);
+    assert.match(planPage, /name="new_body"/);
+    const planPosted = await fetch(`${origin}/desk/plan`, {
+      method: 'POST',
+      body: new URLSearchParams({ note: 'Test day', new_body: 'Write the first line' }),
+      redirect: 'manual',
+    });
+    assert.equal(planPosted.status, 303);
+    assert.equal(planPosted.headers.get('location'), '/?tab=plan&ok=plan');
+    const planSaved = await (await fetch(`${origin}${planPosted.headers.get('location')}`)).text();
+    assert.match(planSaved, /Plan saved/);
+    assert.match(planSaved, /Test day/);
+    assert.match(planSaved, /Write the first line/);
+    const planId = /name="body_(\d+)"/.exec(planSaved)?.[1];
+    assert.ok(planId);
+    const planEdited = await fetch(`${origin}/desk/plan`, {
+      method: 'POST',
+      body: new URLSearchParams({ note: 'Test day', item: planId, [`body_${planId}`]: 'Changed line', done: planId }),
+      redirect: 'manual',
+    });
+    assert.equal(planEdited.status, 303);
+    const planAfter = await (await fetch(`${origin}${planEdited.headers.get('location')}`)).text();
+    assert.match(planAfter, /Changed line/);
+    assert.match(planAfter, new RegExp(`name="done" value="${planId}" checked`));
+    const planRemoved = await fetch(`${origin}/desk/plan`, {
+      method: 'POST',
+      body: new URLSearchParams({ note: 'Kept the note', item: planId, [`body_${planId}`]: 'Changed line', remove: planId }),
+      redirect: 'manual',
+    });
+    assert.equal(planRemoved.status, 303);
+    const planEmpty = await (await fetch(`${origin}${planRemoved.headers.get('location')}`)).text();
+    assert.match(planEmpty, /Nothing planned yet/);
+    assert.match(planEmpty, /Kept the note/);
+    assert.doesNotMatch(planEmpty, /Changed line/);
     const boundary = '----LeadlineBoundary';
     const uploadPdf = tinyPdf('Harbor Studio sells websites to local clinics.');
     const uploadBody = Buffer.concat([

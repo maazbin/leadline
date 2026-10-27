@@ -66,7 +66,7 @@ export function field(label, name, value, opts = {}) {
 export function shell(page) {
   const step = plan();
   const nav = NAV.map(([href, label, team]) => {
-    const kernelActive = page.team === 'kernel' && label.toLowerCase() === page.title.toLowerCase();
+    const kernelActive = page.team === 'kernel' && label.toLowerCase() === String(page.nav || page.title).toLowerCase();
     const on = page.team !== 'kernel'
       ? (team === page.team ? ' class="active"' : '')
       : (kernelActive ? ' class="active"' : '');
@@ -95,6 +95,7 @@ export function shell(page) {
         </div>
         <div class="flow">${esc(step.flow)} · ${esc(STEPS[step.step] || step.step)}</div>
       </header>
+      ${page.tabs || ''}
       ${powerBar()}
       ${page.body}
     </main>

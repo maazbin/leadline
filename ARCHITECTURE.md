@@ -18,6 +18,8 @@ Discover     who might buy, from the open web and signed-in pages
 Reach        drafts, approval, one send, a follow-up
 Create       posts and assets, published by the person
 GTM          the campaign that points at the other four
+Trace        where the run stopped. It does not find people, write a note, or send
+Ledger       the master's review of that crew. It does not send or change a switch
 ```
 
 `src/kernel` holds the database, the next step, and the context slices. `src/browser` holds Chrome. `src/web` is the only place a person approves a send or changes a mode. `src/mcp/tools.js` is the agent's door, and it does not wrap the human-only functions.

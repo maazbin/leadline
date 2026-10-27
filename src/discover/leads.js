@@ -182,15 +182,20 @@ export function setLeadOutcome(id, status, actor) {
   return { ok: true, id, status };
 }
 
-/** The next qualified lead that has no live first message. */
-export function qualifiedWithoutMessage() {
-  return get(
+/** Qualified people who still have no live first message. */
+export function leadsAwaitingMessage() {
+  return all(
     `SELECT l.* FROM leads l
      WHERE l.fit = 'yes' AND l.status IN ('new', 'qualified', 'queued')
        AND NOT EXISTS (
          SELECT 1 FROM messages m
          WHERE m.lead_id = l.id AND m.kind = 'first' AND m.status != 'cancelled'
        )
-     ORDER BY l.id ASC LIMIT 1`,
+     ORDER BY l.id ASC`,
   );
+}
+
+/** The next qualified lead that has no live first message. */
+export function qualifiedWithoutMessage() {
+  return leadsAwaitingMessage()[0];
 }
