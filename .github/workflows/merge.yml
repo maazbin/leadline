@@ -1,0 +1,31 @@
+# Arms GitHub auto-merge on a pull request into main.
+# GitHub merges the pull request after the check named `test` is green.
+# This job is not a required check. Do not rename the job `test` in test.yml.
+# Must not: merge while `test` is red, push to main, or turn the ruleset off.
+
+name: Merge
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  arm:
+    name: arm
+    if: github.event.pull_request.draft == false && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Arm auto-merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          armed=$(gh pr view "$PR" --repo "$REPO" --json autoMergeRequest --jq '.autoMergeRequest.mergeMethod // ""')
+          if [ -n "$armed" ]; then
+            echo "Auto-merge is already armed ($armed)."
+            exit 0
+          fi
+          gh pr merge "$PR" --repo "$REPO" --auto --merge
+          echo "Auto-merge armed. GitHub merges this pull request when test is green."
