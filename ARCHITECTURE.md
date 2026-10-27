@@ -22,7 +22,7 @@ Trace        where the run stopped. It does not find people, write a note, or se
 Ledger       the master's review of that crew. It does not send or change a switch
 ```
 
-`src/kernel` holds the database, the next step, and the context slices. `src/browser` holds Chrome. `src/web` is the only place a person approves a send or changes a mode. Each desk screen is its own route and its own file. The rail lists every screen under Desk, Work, and Control. The front uses those same groups and shows the pipeline. `/pipeline` is that view on its own. Crew keeps the lane graph, plus the check. Every page shows a breadcrumb. `src/mcp/tools.js` is the agent's door, and it does not wrap the human-only functions. When Full power is on, Reach sends an Allow message and does not ask for an approval.
+`src/kernel` holds the database, the next step, and the context slices. `src/browser` holds Chrome. `src/web` is the only place a person approves a send or changes a mode. Each desk screen is its own route and its own file. The rail lists every screen under Desk, Work, and Control. The front uses those same groups and shows the pipeline. `/pipeline` is that view on its own. Crew keeps the lane graph, plus the check. Every page shows a breadcrumb. `src/mcp/tools.js` is the agent's door, and it does not wrap the human-only functions. When Full power is on, Reach writes the next note and sends it, Create publishes LinkedIn and X, and Virality posts one pattern. The desk still asks before each send when Full power is off.
 
 ## One step
 
@@ -36,7 +36,7 @@ The order on the main lane is fixed:
 4. If one message is allowed out, send that one and stop on a wall.
 5. Otherwise draft, qualify, or search. Never all three.
 
-Create is a separate lane. It does not sit in front of outreach, and it does not post.
+Create is a separate lane. It does not sit in front of outreach. With Full power on, it publishes the LinkedIn or X draft after the words are in the box.
 
 ## Chrome
 

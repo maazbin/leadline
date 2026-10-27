@@ -8,9 +8,9 @@ One message has status `sent`, or it is waiting on the person, or it was cancell
 
 ## Steps
 
-1. `draft_message` for a lead whose fit is yes. One open draft per lead and channel.
+1. With Full power on, the desk writes one first note from the campaign for the next person whose fit is yes. Do not draft a second note. With Full power off, `draft_message` does that write. One open draft per lead and channel.
 2. If the channel mode is `draft` or `off`, stop. The person changes it on `/permissions`.
-3. If Full power is on, skip approval. `execute_send` is next when `canSend` is ok. Reach does not ask.
+3. If Full power is on, skip approval. The desk calls `execute_send` when `canSend` is ok. Reach types the note into the box, then clicks Send. When Message is a Premium wall, the same note goes out as a connection invitation. If LinkedIn is out of free notes, the desk waits six hours and does not start a trial. Reach does not ask.
 4. If Full power is off and the mode is `approve`, `request_approval` and stop. There is no approve tool.
 5. If `next_action` says `execute_send`, call it for that id only.
 6. On `captcha` or `login`, `record_encounter` and stop.

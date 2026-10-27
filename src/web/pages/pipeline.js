@@ -9,6 +9,7 @@ import { dashboard } from '../../kernel/stats.js';
 import { LEDGER_LABEL, listLedger } from '../../kernel/ledger.js';
 import { clip, esc } from '../../kernel/text.js';
 import { listStalls } from '../../trace/stalls.js';
+import { fullPower } from '../../kernel/desk.js';
 import { profileGaps } from '../../understand/profile.js';
 import { flash, shell } from '../layout.js';
 
@@ -43,6 +44,7 @@ export function pipelineView() {
   const gaps = profileGaps();
   const campaign = newestCampaign();
   const stalls = listStalls('open');
+  const power = fullPower();
   const openNotes = counts.drafts + counts.waiting;
   const campaignWord = campaign ? (CAMPAIGN_WORD[String(campaign.status)] || String(campaign.status)) : '';
   const day = [
@@ -54,12 +56,12 @@ export function pipelineView() {
   ];
   const flow = day.map((html, index) => `${index ? '<li class="pipe" aria-hidden="true">→</li>' : ''}<li>${html}</li>`).join('');
   const beside = [
-    card(byAgent, 'create', '/create', `${counts.content} drafts`, 'Posts wait for you to publish.'),
-    card(byAgent, 'virality', '/results', 'Beside the day', 'Tries one pattern. It does not post.'),
+    card(byAgent, 'create', '/create', `${counts.content} drafts`, power ? 'Full power publishes the next post.' : 'Posts wait for you to publish.'),
+    card(byAgent, 'virality', '/results', 'Beside the day', power ? 'Posts one pattern, then keeps the gap.' : 'Tries one pattern. It does not post.'),
   ].join('');
   return `<ol class="pipeline" aria-label="Pipeline">${flow}</ol>
     <div class="beside">
-      <p class="muted">Beside the day. These do not send.</p>
+      <p class="muted">${power ? 'Beside the day. Full power posts these.' : 'Beside the day. These do not send.'}</p>
       <div class="beside-row">${beside}</div>
     </div>`;
 }

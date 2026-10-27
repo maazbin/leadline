@@ -146,8 +146,8 @@ function judge(spec, facts) {
   if (spec.id === 'discover') return judgeDiscover(facts);
   if (spec.id === 'gtm') return judgeGtm(facts);
   if (spec.id === 'reach') return judgeReach(mode, facts);
-  if (spec.id === 'create') return judgeCreate(mode);
-  if (spec.id === 'virality') return judgeVirality(mode);
+  if (spec.id === 'create') return judgeCreate(mode, facts);
+  if (spec.id === 'virality') return judgeVirality(mode, facts);
   return judgeTrace(facts);
 }
 
@@ -197,6 +197,7 @@ function judgeReach(mode, facts) {
   const waiting = facts.waitingLeads[0];
   if (waiting) {
     const name = String(waiting.name || 'A person').trim() || 'A person';
+    if (facts.power) return { status: 'working', detail: `${name} is marked yes. Reach is writing the note.` };
     return { status: 'stuck', detail: `${name} is marked yes and has no message, so there is nothing to send.` };
   }
   if (!facts.power && (mode === 'draft' || mode === 'approve')) {
@@ -216,17 +217,21 @@ function judgeReach(mode, facts) {
 
 /**
  * @param {string} mode
+ * @param {ReturnType<typeof readFacts>} facts
  */
-function judgeCreate(mode) {
+function judgeCreate(mode, facts) {
+  if (facts.power && mode !== 'off') return { status: 'working', detail: 'Full power publishes the next LinkedIn or X post.' };
   if (mode === 'auto') return { status: 'working', detail: 'Create can draft a post. You still publish it.' };
   return { status: 'waiting', detail: 'Posts stay drafts until you publish them.' };
 }
 
 /**
  * @param {string} mode
+ * @param {ReturnType<typeof readFacts>} facts
  */
-function judgeVirality(mode) {
-  if (mode === 'auto') return { status: 'working', detail: 'Virality can try one pattern. It does not post.' };
+function judgeVirality(mode, facts) {
+  if (facts.power && mode !== 'off') return { status: 'working', detail: 'Full power posts one pattern, then keeps the gap.' };
+  if (mode === 'auto') return { status: 'working', detail: 'Virality can try one pattern. You still publish it.' };
   return { status: 'waiting', detail: 'Virality is waiting. It does not post on its own.' };
 }
 

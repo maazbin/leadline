@@ -207,7 +207,7 @@ export function createPage(query) {
     <div class="split">
       <form method="post" action="/create" class="card">
         <h2>New draft</h2>
-        <p class="muted">Writing is in here. Publishing is not. Post it yourself, then mark it published.</p>
+        <p class="muted">${fullPower() ? 'Full power publishes the next LinkedIn or X draft. Other channels still wait for you.' : 'Writing is in here. Publishing waits until Full power is on, or until you post it and mark it published.'}</p>
         <label class="field"><span>Channel</span><select name="channel">${CHANNEL_IDS.map((id) => `<option>${id}</option>`).join('')}</select></label>
         ${field('Title', 'title', '')}
         ${field('Body', 'body', '', { multiline: true, rows: 8 })}

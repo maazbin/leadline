@@ -61,14 +61,21 @@ export function saveDesk(input, actor) {
     running, full, adapt, nowIso(),
   );
   recordEvent('kernel', 'desk', 'settings', `run ${running} power ${full} adapt ${adapt}`);
-  if (full) alignReachWithFullPower();
+  if (full) alignWorkWithFullPower();
   return { ok: true, running, full_power: full, adaptability: adapt };
 }
 
-/** Full power means Reach sends. Ask-first is the state when Full power is off. */
+/** Full power turns Reach, Create, and Virality on. They do the work. Ask-first is when Full power is off. */
+export function alignWorkWithFullPower() {
+  if (!fullPower()) return;
+  for (const agent of ['reach', 'create', 'virality']) {
+    if (agentMode(agent) !== 'auto') saveAgentMode(agent, 'auto', 'person');
+  }
+}
+
+/** @deprecated Use alignWorkWithFullPower. Kept so older imports still line the lanes up. */
 export function alignReachWithFullPower() {
-  if (agentMode('reach') === 'auto') return;
-  saveAgentMode('reach', 'auto', 'person');
+  alignWorkWithFullPower();
 }
 
 /** @returns {'unasked' | 'yes' | 'no'} */
@@ -113,7 +120,9 @@ export function begin(input, actor) {
     run('UPDATE agent_permissions SET mode = ?, updated_at = ? WHERE agent = ?', 'auto', now, agent);
   }
   if (power) {
-    run('UPDATE agent_permissions SET mode = ?, updated_at = ? WHERE agent = ?', 'auto', now, 'reach');
+    for (const agent of ['reach', 'create', 'virality']) {
+      run('UPDATE agent_permissions SET mode = ?, updated_at = ? WHERE agent = ?', 'auto', now, agent);
+    }
     for (const channel of ['email', 'linkedin', 'x']) {
       run(
         'UPDATE channel_permissions SET mode = ?, updated_at = ? WHERE channel = ?',
@@ -128,8 +137,8 @@ export function begin(input, actor) {
     fullPower: power,
     url: webOrigin(),
     detail: power
-      ? 'Started. Email, LinkedIn, and X send without asking. You run npm. Do not hand the person a terminal.'
-      : 'Started. Each send still waits for a yes on Reach. You run npm. Do not hand the person a terminal.',
+      ? 'Started. Reach writes and sends. Create publishes LinkedIn and X. Virality posts one pattern. You run npm. Do not hand the person a terminal.'
+      : 'Started. Each send still waits for a yes on Reach. Create and Virality wait for you to publish. You run npm. Do not hand the person a terminal.',
   };
 }
 

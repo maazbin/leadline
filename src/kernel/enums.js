@@ -27,9 +27,9 @@ export const MODES = ['off', 'draft', 'approve', 'auto'];
 export const LANES = [
   { id: 'understand', label: 'Understand', hint: 'Learns the offer from the site and your answers.' },
   { id: 'discover', label: 'Discover', hint: 'Finds people and marks who fits.' },
-  { id: 'create', label: 'Create', hint: 'Writes posts and assets.' },
+  { id: 'create', label: 'Create', hint: 'Writes posts. Full power publishes them on LinkedIn and X.' },
   { id: 'gtm', label: 'GTM', hint: 'Keeps the campaign, the mix, and the follow-up delay.' },
-  { id: 'virality', label: 'Virality', hint: 'Tries one pattern at a time and records what moved.' },
+  { id: 'virality', label: 'Virality', hint: 'Changes one thing. Full power posts that one pattern.' },
   { id: 'trace', label: 'Trace', hint: 'Writes down where the run stopped. It does not send.' },
 ];
 
@@ -45,8 +45,8 @@ export const CREW = [
   { id: 'discover', label: 'Discover', job: 'Finds people and marks who fits.', required: true },
   { id: 'gtm', label: 'GTM', job: 'Keeps the campaign and the follow-up delay.', required: true },
   { id: 'reach', label: 'Reach', job: 'Writes one note and sends one message.', required: true },
-  { id: 'create', label: 'Create', job: 'Writes posts. You publish them.', required: false },
-  { id: 'virality', label: 'Virality', job: 'Tries one pattern at a time. It does not post.', required: false },
+  { id: 'create', label: 'Create', job: 'Writes posts. Full power publishes them on LinkedIn and X.', required: false },
+  { id: 'virality', label: 'Virality', job: 'Tries one pattern. Full power posts that one pattern.', required: false },
   { id: 'trace', label: 'Trace', job: 'Writes down where the run stopped.', required: true },
 ];
 

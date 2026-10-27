@@ -91,7 +91,7 @@ function noMessageDetail(lead) {
   const parts = [`${name} is marked yes and has no message.`];
   if (!String(lead.email || '').trim()) parts.push('No email is on file.');
   parts.push(fullPower()
-    ? 'Full power has nothing to send.'
+    ? 'Full power writes the note on the next pass.'
     : 'A message has to be written before a send can be asked.');
   if (lead.source === 'linkedin' || lead.source === 'x') {
     parts.push(`A ${lead.source} send stays unclicked until the note is in the box.`);

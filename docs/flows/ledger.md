@@ -21,14 +21,14 @@ Create and Virality may stay Off. That row is `off`, and it is not a fault.
 | Status | Plain words | Meaning |
 | --- | --- | --- |
 | `working` | Working | The lane is on, and its job is moving or correctly finished |
-| `waiting` | Waiting on you | A person has to press Start, publish, or allow a send |
-| `stuck` | Needs a look | A required lane is Off, a marked person has no message, or Send was not clicked because the note is not in the box |
+| `waiting` | Waiting on you | Full power is off, and a person has to press Start, publish, or allow a send |
+| `stuck` | Needs a look | A required lane is Off, or Send was not clicked because the note is not in the box. A marked person with no message is stuck only while Full power is off. While it is on, Reach is writing that note. |
 | `off` | Off | An optional lane is Off |
 | `paused` | Paused | Run is off. No lane is expected to move |
 
 `fine` is true when no row is `stuck`.
 
-When Full power is on, Reach is not waiting on an approval. An Allow message can go. Prepare and Off still wait. The monitoring screen is `/crew`. It draws the lanes as a graph. Click a lane to open it. The other screens stay in the side list. Recent activity is a path under the graph.
+When Full power is on, Reach writes and sends, Create publishes LinkedIn and X, and Virality posts one pattern. Prepare and Off on a platform still wait. The monitoring screen is `/crew`. It draws the lanes as a graph. Click a lane to open it. The other screens stay in the side list. Recent activity is a path under the graph.
 
 ## Steps
 

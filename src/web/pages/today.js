@@ -55,7 +55,7 @@ const GROUPS = [
     ['/setup', 'Understand', 'What you sell', 'understand'],
     ['/discover', 'Discover', 'Who to talk to', 'discover'],
     ['/reach', 'Reach', 'One message', 'reach'],
-    ['/create', 'Create', 'Posts you publish', 'create'],
+    ['/create', 'Create', 'Posts', 'create'],
     ['/gtm', 'GTM', 'The campaign', 'gtm'],
   ]],
   ['control', 'Control', [
