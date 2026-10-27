@@ -1,0 +1,4 @@
+[mcp_servers.leadline]
+command = "node"
+args = ["mcp-server.js"]
+enabled = true

@@ -1,0 +1,264 @@
+// src/web/pages/today.js — Today and Understand.
+//
+// Owns: the home summary and the setup form.
+// Must not: send, approve, or change a channel mode.
+// Writes: business, answers, and questions, through the understand module.
+
+import { recommendations, scoreboard } from '../../kernel/brief.js';
+import { getSettings, startConsent } from '../../kernel/desk.js';
+import { recentEvents } from '../../kernel/events.js';
+import { plan } from '../../kernel/flows.js';
+import { dashboard } from '../../kernel/stats.js';
+import { esc } from '../../kernel/text.js';
+import { answerQuestion, getBusiness, openQuestions, profileGaps, saveBusiness } from '../../understand/profile.js';
+import { addLinks, addPdf, listSources, readSource } from '../../understand/sources.js';
+import { listPages, readWebsite } from '../../understand/website.js';
+import { STEPS } from '../copy.js';
+import { readMultipart, redirect } from '../http.js';
+import { field, flash, shell } from '../layout.js';
+
+/**
+ * @param {Record<string, string>} query
+ */
+export function homePage(query) {
+  const step = plan();
+  const counts = dashboard();
+  const events = recentEvents(8);
+  const settings = getSettings();
+  const running = Number(settings.running) === 1;
+  const adapt = Number(settings.adaptability) === 1;
+  const recs = recommendations();
+  const board = scoreboard();
+  const questions = openQuestions().slice(0, 3);
+  const consent = startConsent();
+  const body = `
+    ${flash(query)}
+    ${consent === 'yes' ? '' : `<section class="next">
+      <h2>Should the agent start?</h2>
+      <p>${consent === 'no' ? 'You said no. The agent is stopped.' : 'The agent runs npm, opens this desk, and does the work. You do not open a terminal.'} Say yes or no in the chat, or answer here.</p>
+      <div class="row">
+        <form method="post" action="/desk/begin"><input type="hidden" name="answer" value="yes"><input type="hidden" name="fullPower" value="1"><button type="submit">Yes. Send without asking</button></form>
+        <form method="post" action="/desk/begin"><input type="hidden" name="answer" value="yes"><input type="hidden" name="fullPower" value="0"><button type="submit" class="quiet">Yes, but ask before each send</button></form>
+        <form method="post" action="/desk/begin"><input type="hidden" name="answer" value="no"><button type="submit" class="quiet">No</button></form>
+      </div>
+    </section>`}
+    <section class="status">
+      <span class="pill ${running ? 'on' : ''}">${running ? 'Running' : 'Stopped'}</span>
+      <span class="pill ${adapt ? 'on' : ''}">${adapt ? 'Adapting' : 'Playbook order'}</span>
+      <a class="button quiet" href="/settings">Settings</a>
+    </section>
+    <section class="next">
+      <p class="kicker">${esc(step.flow)}</p>
+      <h2>${esc(STEPS[step.step] || step.step)}</h2>
+      <p>${esc(step.why)}</p>
+      <div class="row">
+        ${step.url ? `<a class="button" href="${esc(step.url)}">Open this step</a>` : ''}
+        <span class="muted">Agent tool: ${esc(step.tool || 'none — waiting on you')}</span>
+      </div>
+    </section>
+    <section class="grid stats">
+      ${stat('Leads', counts.leads)}
+      ${stat('Qualified', counts.qualified)}
+      ${stat('Sent', counts.sent)}
+      ${stat('Waiting on you', counts.questions + counts.encounters)}
+    </section>
+    <section class="card">
+      <h2>What to do</h2>
+      <ul class="recs">${recs.map((item) => `<li class="rec ${esc(item.tone)}"><a href="${esc(item.href)}">${esc(item.text)}</a></li>`).join('')}</ul>
+    </section>
+    <section class="card">
+      <h2>Platforms</h2>
+      <table>
+        <thead><tr><th>Platform</th><th>Now</th><th>Today</th><th>Next step</th></tr></thead>
+        <tbody>
+          ${board.map((row) => `<tr>
+            <td>${esc(row.label)}</td>
+            <td>${esc(row.plain)}</td>
+            <td>${row.sent} / ${row.cap}</td>
+            <td>${row.step ? esc(row.step) : '<span class="muted">No open step</span>'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <p class="muted"><a href="/learn">Train a step or read a path</a></p>
+    </section>
+    ${questions.length ? `<section class="card">
+      <h2>Your answers</h2>
+      <p class="muted">The run does not stop for these. Your answer is kept and used next time.</p>
+      ${questions.map((item) => `<form method="post" action="/desk/answer" class="answer">
+        <input type="hidden" name="id" value="${item.id}">
+        <label class="field"><span>${esc(item.question)}</span><input name="answer" required></label>
+        <button type="submit" class="quiet">Save answer</button>
+      </form>`).join('')}
+    </section>` : ''}
+    <section class="grid5">
+      ${card('/setup', 'understand', 'Understand', 'What you sell', counts.questions ? `${counts.questions} open` : (profileGaps().length ? 'Gaps' : 'Ready'))}
+      ${card('/discover', 'discover', 'Discover', 'Who to talk to', String(counts.leads))}
+      ${card('/reach', 'reach', 'Reach', 'Permissioned outreach', String(counts.waiting || counts.drafts))}
+      ${card('/create', 'create', 'Create', 'Posts and assets', String(counts.content))}
+      ${card('/gtm', 'gtm', 'GTM', 'The campaign that ties them', String(counts.active))}
+    </section>
+    <section class="card">
+      <h2>Recent activity</h2>
+      ${events.length ? `<ul class="log">${events.map((row) => `<li>${esc(activity(row))}</li>`).join('')}</ul>` : '<p class="muted">Nothing recorded yet. Start on Understand.</p>'}
+    </section>`;
+  return shell({ team: 'kernel', title: 'Today', kicker: 'Control plane', body });
+}
+
+function activity(row) {
+  if (row.kind === 'desk') return 'Settings updated';
+  if (row.kind === 'lane') return `${row.ref} set to ${row.detail}`;
+  if (row.kind === 'permission') return `${row.ref}: ${row.detail}`;
+  if (row.kind === 'train') return `Playbook updated for ${row.ref}`;
+  if (row.kind === 'strategy') return `${row.ref}: ${row.detail}`;
+  if (row.kind === 'material') return `Material saved: ${row.detail}`;
+  const detail = row.detail ? ` — ${row.detail}` : '';
+  return `${row.team} ${row.kind}${detail}`;
+}
+
+function stat(label, value) {
+  return `<div class="statbox"><span class="stat">${esc(value)}</span><span>${esc(label)}</span></div>`;
+}
+
+function card(href, team, title, text, stat) {
+  return `<a class="team" data-team="${team}" href="${href}"><span class="stat">${esc(stat)}</span><strong>${esc(title)}</strong><span>${esc(text)}</span></a>`;
+}
+
+/**
+ * @param {Record<string, string>} query
+ */
+export function setupPage(query) {
+  const business = getBusiness();
+  const gaps = profileGaps();
+  const questions = openQuestions();
+  const pages = listPages();
+  const body = `
+    ${flash(query)}
+    ${gaps.length
+      ? `<p class="banner bad">Still needed: ${esc(gaps.join(', '))}. Type the form, or add a PDF and your website and social profiles.</p>`
+      : '<p class="banner good">This profile is complete enough to draft a campaign.</p>'}
+    <div class="split">
+      <form method="post" action="/setup" class="card">
+        <h2>The business</h2>
+        ${field('Business name', 'name', business.name, { required: true })}
+        ${field('Your name on messages', 'sender_name', business.sender_name, { required: true })}
+        ${field('Your email', 'sender_email', business.sender_email, { type: 'email', hint: 'Optional. Used when a channel is email.' })}
+        ${field('Website', 'website', business.website, { hint: 'Leave blank if you paste notes instead.' })}
+        <div class="row">
+          <button type="button" id="read-site" class="quiet">Read my website</button>
+          <span class="muted">Fills a preview. You still press Save.</span>
+        </div>
+        <pre class="preview" id="site-preview">${esc(pages[0]?.excerpt || 'Nothing read yet.')}</pre>
+        ${field('One sentence', 'one_liner', business.one_liner)}
+        ${field('What you sell', 'offer', business.offer, { required: true, multiline: true })}
+        ${field('Who it is for', 'audience', business.audience, { required: true, multiline: true })}
+        ${field('The problem', 'problem', business.problem, { required: true, multiline: true })}
+        ${field('Proof you will actually claim', 'proof', business.proof, { multiline: true, hint: 'The agent must not invent customers or numbers.' })}
+        ${field('Price band', 'price_band', business.price_band)}
+        ${field('Places you sell', 'geos', business.geos)}
+        ${field('Tone', 'tone', business.tone, { hint: 'Plain, warm, direct. The agent copies this.' })}
+        ${field('Do not contact', 'do_not_contact', business.do_not_contact, { multiline: true, hint: 'One email, handle, or company per line.' })}
+        ${field('Notes, a page, or a deck', 'extra', business.extra, { multiline: true, rows: 6 })}
+        ${questions.length ? `<h2>Questions from the agent</h2>${questions.map((q) => field(q.question, `q_${q.id}`, '', { multiline: true })).join('')}` : ''}
+        <button type="submit">Save profile</button>
+      </form>
+      <section class="card">
+        <h2>Materials</h2>
+        <p>Upload a PDF, your website, and the social profiles that are yours. Sign in to those accounts in the Leadline Chrome before they are read. A logged-out page is skipped.</p>
+        <form method="post" action="/setup/materials" enctype="multipart/form-data">
+          <label class="field"><span>PDF</span><input name="pdf" type="file" accept="application/pdf,.pdf"><small>A scan with no selectable text cannot fill the profile.</small></label>
+          ${field('Website and social profiles', 'links', '', { multiline: true, rows: 5, hint: 'One URL per line. LinkedIn, X, Instagram, Facebook, TikTok, Reddit, and YouTube are read only while you are signed in.' })}
+          <button type="submit">Save materials</button>
+        </form>
+        <h2>Saved materials</h2>
+        ${materialsBlock()}
+        <h2>Pages read</h2>
+        ${pages.length ? pages.map((page) => `<p><strong>${esc(page.title || page.url)}</strong><br><span class="muted">${esc(page.url)}</span></p>`).join('') : '<p class="muted">Nothing read yet.</p>'}
+      </section>
+    </div>`;
+  return shell({ team: 'understand', title: 'Understand', kicker: 'Understand', body });
+}
+
+/**
+ * Answer one open question. The run stays up.
+ * @param {import('node:http').ServerResponse} res
+ * @param {Record<string, string>} fields
+ */
+export function answerPost(res, fields) {
+  const result = answerQuestion(Number(fields.id), String(fields.answer || ''), 'person');
+  redirect(res, result.ok ? '/?ok=saved' : `/?error=${result.code}`);
+}
+
+/**
+ * @param {import('node:http').ServerResponse} res
+ * @param {Record<string, string>} fields
+ */
+export function setupPost(res, fields) {
+  const saved = saveBusiness(fields);
+  if (!saved.ok) return redirect(res, `/setup?error=${saved.code}`);
+  for (const [key, value] of Object.entries(fields)) {
+    if (!key.startsWith('q_') || !String(value || '').trim()) continue;
+    answerQuestion(Number(key.slice(2)), String(value), 'person');
+  }
+  redirect(res, '/setup?ok=saved');
+}
+
+/**
+ * @param {Record<string, unknown>} fields
+ */
+export async function readSite(fields) {
+  return readWebsite(String(fields.url || ''));
+}
+
+const SOURCE_STATUS = {
+  saved: 'Waiting to be read',
+  read: 'Read',
+  needs_login: 'Sign in first',
+  no_text: 'No text in this PDF',
+  failed: 'Could not read',
+};
+
+function materialsBlock() {
+  const rows = listSources();
+  if (!rows.length) return '<p class="muted">No PDF or profile yet.</p>';
+  return rows.map((row) => {
+    const name = row.label || row.url || row.kind;
+    const where = row.kind === 'social' ? row.platform : row.kind;
+    const retry = row.status === 'saved' || row.status === 'needs_login' || row.status === 'failed'
+      ? `<form method="post" action="/setup/materials/read"><input type="hidden" name="id" value="${esc(row.id)}"><button class="quiet" type="submit">Read</button></form>`
+      : '';
+    return `<div class="row"><div><strong>${esc(name)}</strong><br><span class="muted">${esc(where)} · ${esc(SOURCE_STATUS[row.status] || row.status)}</span></div>${retry}</div>`;
+  }).join('');
+}
+
+/**
+ * @param {import('node:http').IncomingMessage} req
+ * @param {import('node:http').ServerResponse} res
+ */
+export async function materialsPost(req, res) {
+  const parsed = await readMultipart(req);
+  if (!parsed.ok) return redirect(res, `/setup?error=${parsed.code}`);
+  const file = parsed.files.pdf;
+  const links = String(parsed.fields.links || '');
+  let any = false;
+  if (file && file.data.length) {
+    const saved = addPdf(file.data, file.filename || 'upload.pdf');
+    if (!saved.ok) return redirect(res, `/setup?error=${saved.code}`);
+    any = true;
+  }
+  if (links.trim()) {
+    const saved = addLinks(links);
+    if (!saved.ok && !any) return redirect(res, `/setup?error=${saved.code}`);
+    any = any || saved.ok;
+  }
+  if (!any) return redirect(res, '/setup?error=empty');
+  redirect(res, '/setup?ok=materials');
+}
+
+/**
+ * @param {import('node:http').ServerResponse} res
+ * @param {Record<string, string>} fields
+ */
+export async function readMaterialPost(res, fields) {
+  const result = await readSource(Number(fields.id));
+  redirect(res, result.ok ? '/setup?ok=materials' : `/setup?error=${result.code || 'missing'}`);
+}
