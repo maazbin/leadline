@@ -22,7 +22,7 @@ Trace        where the run stopped. It does not find people, write a note, or se
 Ledger       the master's review of that crew. It does not send or change a switch
 ```
 
-`src/kernel` holds the database, the next step, and the context slices. `src/browser` holds Chrome. `src/web` is the only place a person approves a send or changes a mode. Each desk screen is its own route and its own file. The rail lists every screen. The front shows the next step, the lane graph, and a door for each screen. Crew is that same graph, plus the check. `src/mcp/tools.js` is the agent's door, and it does not wrap the human-only functions. When Full power is on, Reach sends an Allow message and does not ask for an approval.
+`src/kernel` holds the database, the next step, and the context slices. `src/browser` holds Chrome. `src/web` is the only place a person approves a send or changes a mode. Each desk screen is its own route and its own file. The rail lists every screen under Desk, Work, and Control. The front uses those same groups. Every page shows a breadcrumb. Crew is the lane graph, plus the check. `src/mcp/tools.js` is the agent's door, and it does not wrap the human-only functions. When Full power is on, Reach sends an Allow message and does not ask for an approval.
 
 ## One step
 

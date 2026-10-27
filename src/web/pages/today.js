@@ -40,30 +40,41 @@ export function homePage(query) {
   });
 }
 
-const DOORS = [
-  ['/plan', 'Plan', "Today's lines", 'kernel'],
-  ['/questions', 'Questions', 'Answers', 'kernel'],
-  ['/persona', 'Persona', 'Who it is for', 'kernel'],
-  ['/trends', 'Trends', 'Charts', 'kernel'],
-  ['/results', 'Results', 'What worked', 'kernel'],
-  ['/tracking', 'Tracking', 'Counts and the log', 'kernel'],
-  ['/crew', 'Crew', 'Open the crew', 'kernel'],
-  ['/setup', 'Understand', 'What you sell', 'understand'],
-  ['/discover', 'Discover', 'Who to talk to', 'discover'],
-  ['/reach', 'Reach', 'One message', 'reach'],
-  ['/create', 'Create', 'Posts you publish', 'create'],
-  ['/gtm', 'GTM', 'The campaign', 'gtm'],
-  ['/browser', 'Browser', 'The signed-in Chrome', 'kernel'],
-  ['/learn', 'Memory', 'Walls and the playbook', 'kernel'],
-  ['/settings', 'Settings', 'Run and the switches', 'kernel'],
+const GROUPS = [
+  ['desk', 'Desk', [
+    ['/crew', 'Crew', 'Open the crew', 'kernel'],
+    ['/plan', 'Plan', "Today's lines", 'kernel'],
+    ['/questions', 'Questions', 'Answers', 'kernel'],
+    ['/persona', 'Persona', 'Who it is for', 'kernel'],
+    ['/trends', 'Trends', 'Charts', 'kernel'],
+    ['/results', 'Results', 'What worked', 'kernel'],
+    ['/tracking', 'Tracking', 'Counts and the log', 'kernel'],
+  ]],
+  ['work', 'Work', [
+    ['/setup', 'Understand', 'What you sell', 'understand'],
+    ['/discover', 'Discover', 'Who to talk to', 'discover'],
+    ['/reach', 'Reach', 'One message', 'reach'],
+    ['/create', 'Create', 'Posts you publish', 'create'],
+    ['/gtm', 'GTM', 'The campaign', 'gtm'],
+  ]],
+  ['control', 'Control', [
+    ['/settings', 'Settings', 'Run and the switches', 'kernel'],
+    ['/permissions', 'Permissions', 'Who may be contacted', 'kernel'],
+    ['/browser', 'Browser', 'The signed-in Chrome', 'kernel'],
+    ['/learn', 'Memory', 'Walls and the playbook', 'kernel'],
+  ]],
 ];
+
+function doorGrid(rows) {
+  return rows.map(([href, label, text, team]) => `<a class="door" data-team="${team}" href="${href}"><strong>${esc(label)}</strong><span>${esc(text)}</span></a>`).join('');
+}
 
 function todayPanel() {
   const step = plan();
   const settings = getSettings();
   const running = Number(settings.running) === 1;
   const adapt = Number(settings.adaptability) === 1;
-  const doors = DOORS.map(([href, label, text, team]) => `<a class="door" data-team="${team}" href="${href}"><strong>${esc(label)}</strong><span>${esc(text)}</span></a>`).join('');
+  const groups = GROUPS.map(([id, label, rows]) => `<section id="${id}"><h2>${label}</h2><div class="front-grid">${doorGrid(rows)}</div></section>`).join('');
   return `
     <section class="status">
       <span class="pill ${running ? 'on' : ''}">${running ? 'Running' : 'Stopped'}</span>
@@ -81,10 +92,7 @@ function todayPanel() {
       ${crewMap(fullPower())}
       <p class="legend"><span class="working">Working</span><span class="waiting">Waiting on you</span><span class="stuck">Needs a look</span><span class="off">Off</span><span class="paused">Paused</span></p>
     </section>
-    <section>
-      <h2>Open</h2>
-      <div class="front-grid">${doors}</div>
-    </section>`;
+    ${groups}`;
 }
 
 /**
