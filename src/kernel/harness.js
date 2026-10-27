@@ -13,6 +13,7 @@ import { newestCampaign, setCampaignStatus } from '../gtm/campaigns.js';
 import { canSend } from '../reach/gate.js';
 import { listMessages } from '../reach/rows.js';
 import { executeSend } from '../browser/act.js';
+import { syncStalls } from '../trace/stalls.js';
 
 const GAPS = {
   linkedin: 90000,
@@ -47,8 +48,24 @@ function markPace(channel) {
   );
 }
 
-/** One step. Safe to call when the desk is stopped. */
+function rememberStall() {
+  try {
+    syncStalls();
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err);
+  }
+}
+
+/** One step. Safe to call when the desk is stopped. Trace records a stall after the step. */
 export async function tick() {
+  try {
+    return await tickOnce();
+  } finally {
+    rememberStall();
+  }
+}
+
+async function tickOnce() {
   if (!deskRunning()) return { ok: true, code: 'stopped' };
   if (fullPower()) {
     const campaign = newestCampaign();
@@ -66,13 +83,14 @@ export async function tick() {
   if (!message) return { ok: true, code: 'idle', plan: plan() };
   const result = await executeSend(message.id);
   if (result.ok || result.code === 'sent') markPace(String(message.channel));
-  else if (['captcha', 'login', 'no_send_button', 'recipient_not_visible'].includes(result.code)) markPace(String(message.channel));
+  else if (['captcha', 'login', 'no_send_button', 'recipient_not_visible', 'composer_empty'].includes(result.code)) markPace(String(message.channel));
   return result;
 }
 
 /** Start the loop for this server. A second call does nothing. */
 export function bindHarness(server) {
   if (timer) return;
+  rememberStall();
   const beat = () => {
     tick().catch((err) => {
       console.error(err instanceof Error ? err.message : err);

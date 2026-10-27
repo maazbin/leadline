@@ -102,7 +102,7 @@ export function begin(input, actor) {
     power ? 1 : 0,
     now,
   );
-  for (const agent of ['understand', 'discover', 'gtm']) {
+  for (const agent of ['understand', 'discover', 'gtm', 'trace']) {
     run('UPDATE agent_permissions SET mode = ?, updated_at = ? WHERE agent = ?', 'auto', now, agent);
   }
   if (power) {

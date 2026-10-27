@@ -168,10 +168,31 @@ pre.preview {
 .platform { display: grid; grid-template-columns: 1.2fr 1.4fr 110px; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .cap { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 13px; }
 .answer { margin-bottom: 12px; }
+.plan-item { display: grid; grid-template-columns: 78px 1fr auto; gap: 10px; align-items: start; margin: 0 0 12px; }
+.plan-item textarea { min-height: 64px; }
+.plan-done, .plan-remove { display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; padding-top: 10px; }
+nav.tabbar { flex-direction: row; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.tabbar a {
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: var(--muted);
+}
+.tabbar a[aria-selected="true"] { background: var(--text); color: #1a1208; border-color: var(--text); }
+.chart { width: 100%; height: auto; display: block; }
+.persona { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; margin-bottom: 16px; }
+.kv { display: grid; grid-template-columns: 140px 1fr; gap: 8px 12px; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; white-space: pre-wrap; }
+.statgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.meter { display: grid; grid-template-columns: 90px 1fr 36px; gap: 8px; align-items: center; margin: 8px 0; }
+.meter-track { height: 8px; background: var(--card-2); border-radius: 999px; overflow: hidden; }
+.meter-track span { display: block; height: 100%; background: var(--reach); border-radius: 999px; }
 @media (max-width: 980px) {
   .app { grid-template-columns: 1fr; }
   .rail { border-right: 0; border-bottom: 1px solid var(--line); }
-  .grid, .grid5, .split, .lanes, .platform, .powerbar { grid-template-columns: 1fr; }
+  .grid, .grid5, .split, .lanes, .platform, .powerbar, .persona, .kv, .statgrid, .plan-item { grid-template-columns: 1fr; }
   .powerbar { flex-direction: column; align-items: stretch; }
   .powerbar h2 { font-size: 28px; }
   main { padding: 20px 16px 48px; }

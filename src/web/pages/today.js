@@ -11,6 +11,7 @@ import { plan } from '../../kernel/flows.js';
 import { dashboard } from '../../kernel/stats.js';
 import { esc } from '../../kernel/text.js';
 import { answerQuestion, getBusiness, openQuestions, profileGaps, saveBusiness } from '../../understand/profile.js';
+import { deskBody, deskTab, deskTitle, stallSection } from './dashboard.js';
 import { addLinks, addPdf, listSources, readSource } from '../../understand/sources.js';
 import { listPages, readWebsite } from '../../understand/website.js';
 import { STEPS } from '../copy.js';
@@ -21,6 +22,28 @@ import { field, flash, shell } from '../layout.js';
  * @param {Record<string, string>} query
  */
 export function homePage(query) {
+  const consent = startConsent();
+  const start = consent === 'yes' ? '' : `<section class="next">
+      <h2>Should the agent start?</h2>
+      <p>${consent === 'no' ? 'You said no. The agent is stopped.' : 'The agent runs npm, opens this desk, and does the work. You do not open a terminal.'} Say yes or no in the chat, or answer here.</p>
+      <div class="row">
+        <form method="post" action="/desk/begin"><input type="hidden" name="answer" value="yes"><input type="hidden" name="fullPower" value="1"><button type="submit">Yes. Send without asking</button></form>
+        <form method="post" action="/desk/begin"><input type="hidden" name="answer" value="yes"><input type="hidden" name="fullPower" value="0"><button type="submit" class="quiet">Yes, but ask before each send</button></form>
+        <form method="post" action="/desk/begin"><input type="hidden" name="answer" value="no"><button type="submit" class="quiet">No</button></form>
+      </div>
+    </section>`;
+  const desk = deskBody(query, todayPanel());
+  return shell({
+    team: 'kernel',
+    title: deskTitle(deskTab(query.tab)),
+    kicker: 'Desk',
+    nav: 'Today',
+    tabs: desk.tabs,
+    body: `${start}${desk.body}`,
+  });
+}
+
+function todayPanel() {
   const step = plan();
   const counts = dashboard();
   const events = recentEvents(8);
@@ -29,19 +52,7 @@ export function homePage(query) {
   const adapt = Number(settings.adaptability) === 1;
   const recs = recommendations();
   const board = scoreboard();
-  const questions = openQuestions().slice(0, 3);
-  const consent = startConsent();
-  const body = `
-    ${flash(query)}
-    ${consent === 'yes' ? '' : `<section class="next">
-      <h2>Should the agent start?</h2>
-      <p>${consent === 'no' ? 'You said no. The agent is stopped.' : 'The agent runs npm, opens this desk, and does the work. You do not open a terminal.'} Say yes or no in the chat, or answer here.</p>
-      <div class="row">
-        <form method="post" action="/desk/begin"><input type="hidden" name="answer" value="yes"><input type="hidden" name="fullPower" value="1"><button type="submit">Yes. Send without asking</button></form>
-        <form method="post" action="/desk/begin"><input type="hidden" name="answer" value="yes"><input type="hidden" name="fullPower" value="0"><button type="submit" class="quiet">Yes, but ask before each send</button></form>
-        <form method="post" action="/desk/begin"><input type="hidden" name="answer" value="no"><button type="submit" class="quiet">No</button></form>
-      </div>
-    </section>`}
+  return `
     <section class="status">
       <span class="pill ${running ? 'on' : ''}">${running ? 'Running' : 'Stopped'}</span>
       <span class="pill ${adapt ? 'on' : ''}">${adapt ? 'Adapting' : 'Playbook order'}</span>
@@ -56,6 +67,7 @@ export function homePage(query) {
         <span class="muted">Agent tool: ${esc(step.tool || 'none — waiting on you')}</span>
       </div>
     </section>
+    ${stallSection()}
     <section class="grid stats">
       ${stat('Leads', counts.leads)}
       ${stat('Qualified', counts.qualified)}
@@ -79,17 +91,8 @@ export function homePage(query) {
           </tr>`).join('')}
         </tbody>
       </table>
-      <p class="muted"><a href="/learn">Train a step or read a path</a></p>
+      <p class="muted"><a href="/?tab=plan">Today's plan</a> · <a href="/learn">Train a step or read a path</a> · <a href="/?tab=questions">Questions and answers</a></p>
     </section>
-    ${questions.length ? `<section class="card">
-      <h2>Your answers</h2>
-      <p class="muted">The run does not stop for these. Your answer is kept and used next time.</p>
-      ${questions.map((item) => `<form method="post" action="/desk/answer" class="answer">
-        <input type="hidden" name="id" value="${item.id}">
-        <label class="field"><span>${esc(item.question)}</span><input name="answer" required></label>
-        <button type="submit" class="quiet">Save answer</button>
-      </form>`).join('')}
-    </section>` : ''}
     <section class="grid5">
       ${card('/setup', 'understand', 'Understand', 'What you sell', counts.questions ? `${counts.questions} open` : (profileGaps().length ? 'Gaps' : 'Ready'))}
       ${card('/discover', 'discover', 'Discover', 'Who to talk to', String(counts.leads))}
@@ -101,7 +104,6 @@ export function homePage(query) {
       <h2>Recent activity</h2>
       ${events.length ? `<ul class="log">${events.map((row) => `<li>${esc(activity(row))}</li>`).join('')}</ul>` : '<p class="muted">Nothing recorded yet. Start on Understand.</p>'}
     </section>`;
-  return shell({ team: 'kernel', title: 'Today', kicker: 'Control plane', body });
 }
 
 function activity(row) {
@@ -111,6 +113,9 @@ function activity(row) {
   if (row.kind === 'train') return `Playbook updated for ${row.ref}`;
   if (row.kind === 'strategy') return `${row.ref}: ${row.detail}`;
   if (row.kind === 'material') return `Material saved: ${row.detail}`;
+  if (row.kind === 'plan') return `Plan ${row.detail}`;
+  if (row.kind === 'stall') return `Trace: ${row.detail === 'no_message' ? 'no message written' : row.detail === 'composer' ? 'note not in the box' : row.detail}`;
+  if (row.kind === 'stall_cleared') return 'Trace cleared a stall';
   const detail = row.detail ? ` — ${row.detail}` : '';
   return `${row.team} ${row.kind}${detail}`;
 }
@@ -185,7 +190,8 @@ export function setupPage(query) {
  */
 export function answerPost(res, fields) {
   const result = answerQuestion(Number(fields.id), String(fields.answer || ''), 'person');
-  redirect(res, result.ok ? '/?ok=saved' : `/?error=${result.code}`);
+  const tab = fields.tab === 'questions' ? 'tab=questions&' : '';
+  redirect(res, result.ok ? `/?${tab}ok=saved` : `/?${tab}error=${result.code}`);
 }
 
 /**

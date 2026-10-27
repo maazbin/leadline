@@ -29,6 +29,7 @@ import {
 } from '../understand/profile.js';
 import { addLinks, addPdfFile, fillProfile, listSources, readSource } from '../understand/sources.js';
 import { readWebsite } from '../understand/website.js';
+import { syncStalls } from '../trace/stalls.js';
 
 const OPEN = new Set([
   'next_action', 'context_slice', 'onboard_status', 'open_setup', 'read_website', 'get_profile',
@@ -422,6 +423,12 @@ export const TOOLS = [
       id: { type: 'string' }, result: { type: 'string', enum: ['worked', 'failed', 'open'] }, evidence: { type: 'string' },
     }, ['id', 'result']),
     handler: ({ id, result, evidence }) => recordStrategy(String(id), String(result), String(evidence || ''), 'agent'),
+  },
+  {
+    name: 'trace_stalls',
+    description: 'Ask Trace where the run stopped. Writes a stall when a marked person has no message, and clears a stall when that step has moved. Does not send.',
+    inputSchema: schema,
+    handler: () => syncStalls(),
   },
   {
     name: 'begin',

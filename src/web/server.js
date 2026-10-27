@@ -14,6 +14,7 @@ import { beginPost, powerPost, settingsPage, settingsPost } from './pages/desk.j
 import {
   browserLaunch, browserOpen, browserPage, learnPage, learnResolve, permissionsPage, permissionsPost, strategyPost,
 } from './pages/system.js';
+import { planPost } from './pages/dashboard.js';
 import { answerPost, homePage, materialsPost, readMaterialPost, readSite, setupPage, setupPost } from './pages/today.js';
 import {
   createOpen, createPage, createPost, createStatus, discoverFit, discoverOutcome, discoverPage,
@@ -49,6 +50,7 @@ async function handle(req, res) {
     if (path === '/setup/materials/read') return readMaterialPost(res, fields);
     if (path === '/settings') return settingsPost(res, fields);
     if (path === '/desk/answer') return answerPost(res, fields);
+    if (path === '/desk/plan') return planPost(res, fields);
     if (path === '/desk/begin') return beginPost(res, fields);
     if (path === '/desk/power') return powerPost(req, res, fields);
     if (path === '/setup/read-site') return json(res, await readSite(fields));

@@ -30,6 +30,7 @@ export const LANES = [
   { id: 'create', label: 'Create', hint: 'Writes posts and assets.' },
   { id: 'gtm', label: 'GTM', hint: 'Keeps the campaign, the mix, and the follow-up delay.' },
   { id: 'virality', label: 'Virality', hint: 'Tries one pattern at a time and records what moved.' },
+  { id: 'trace', label: 'Trace', hint: 'Writes down where the run stopped. It does not send.' },
 ];
 
 export const LANE_IDS = ['reach', ...LANES.map((lane) => lane.id)];
@@ -60,6 +61,9 @@ export const CAMPAIGN_STATUSES = ['draft', 'active', 'paused', 'done'];
 export const PATH_OUTCOMES = ['reached', 'success', 'stop', 'refused', 'retry'];
 
 export const ENCOUNTER_KINDS = ['captcha', 'login', 'stuck', 'error'];
+
+/** Why Trace says the run cannot move. */
+export const STALL_CODES = ['no_message', 'composer'];
 
 /**
  * @param {string[]} allowed

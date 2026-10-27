@@ -55,6 +55,7 @@ The green bar at the top of every page is the throttle. **Full power** is on, or
 | ✨ | **Create** | Posts and assets. You publish them |
 | 📌 | **GTM** | The campaign that ties the other four together |
 | 📈 | **Virality** | One idea at a time. It does not spray the same post, and it does not click Post for you |
+| 📍 | **Trace** | Where the run stopped. A line stays until that step is done. It does not send |
 
 Each lane has its own permission: Off, Prepare, Ask first, or On. Reach is the only one that sends.
 
@@ -82,6 +83,14 @@ Each lane has its own permission: Off, Prepare, Ask first, or On. Reach is the o
 - The agent cannot approve a message, mark one sent, or publish a post. `execute_send` is the only sender, and it re-checks the gate.
 - A click on Send is not proof the other person received it.
 - Virality never auto-posts.
+
+## 🎬 Later, on Create
+
+Not in this build. Create may plug in tools that make the pictures and the video: **Higgsfield**, **HeyGen**, and Google **Flow** (Veo 3 and Gemini).
+
+The same place would run an A/B test and keep the score. You can see each thing on its own: the tool, the asset, the test, what worked, and what did not.
+
+The screen stays one desk. Each thing has its own plain control, a short label, and room to change it. Nothing new is hidden in a second app.
 
 ## 🚀 Run
 

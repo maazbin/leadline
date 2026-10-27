@@ -44,6 +44,7 @@ Until `onboard_status` reports no gaps, the only work is understanding the busin
 | Reach | `src/reach/` | `docs/flows/reach.md` | Draft, request approval, send one gated message | Approve, or change a mode |
 | Create | `src/create/` | `docs/flows/create.md` | Draft a post | Publish it |
 | GTM | `src/gtm/` | `docs/flows/gtm.md` | Create a draft campaign | Press Start |
+| Trace | `src/trace/` | `docs/flows/trace.md` | Record where the run stopped | Send, or clear a stall that is still true |
 
 Browser memory is `src/browser/` and `docs/flows/browser.md`. Paths live in SQLite. Follow `reached` and `success`. Do not follow `stop` or `refused`.
 
@@ -57,6 +58,6 @@ Read `CODING_STANDARDS.md` and the flow doc for the team you touch. Add a migrat
 
 ## Tools
 
-`begin` `next_action` `context_slice` `onboard_status` `open_setup` `read_website` `get_profile` `add_materials` `add_pdf` `read_source` `fill_profile` `list_answers` `find_answer` `learn_answer` `ask_person` `discover_hints` `reddit_search` `save_lead` `list_leads` `search_leads` `set_lead_fit` `set_lead_outcome` `draft_message` `list_messages` `request_approval` `cancel_message` `schedule_followup` `list_due_followups` `prepare_message` `execute_send` `create_campaign` `campaign_view` `create_content` `launch_chrome` `browser_open` `browser_snapshot` `browser_click` `browser_type` `record_encounter` `resolve_encounter` `path_lookup` `path_record` `desk_status` `list_strategies` `next_strategy` `record_strategy`
+`begin` `next_action` `context_slice` `onboard_status` `open_setup` `read_website` `get_profile` `add_materials` `add_pdf` `read_source` `fill_profile` `list_answers` `find_answer` `learn_answer` `ask_person` `discover_hints` `reddit_search` `save_lead` `list_leads` `search_leads` `set_lead_fit` `set_lead_outcome` `draft_message` `list_messages` `request_approval` `cancel_message` `schedule_followup` `list_due_followups` `prepare_message` `execute_send` `create_campaign` `campaign_view` `create_content` `launch_chrome` `browser_open` `browser_snapshot` `browser_click` `browser_type` `record_encounter` `resolve_encounter` `path_lookup` `path_record` `desk_status` `list_strategies` `next_strategy` `record_strategy` `trace_stalls`
 
 There is no approve tool. `begin` is the only start. The person answers you once. You run npm.

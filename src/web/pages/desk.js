@@ -12,7 +12,7 @@ import { esc } from '../../kernel/text.js';
 import { redirect } from '../http.js';
 import { flash, shell } from '../layout.js';
 
-const SIMPLE = new Set(['understand', 'discover', 'gtm']);
+const SIMPLE = new Set(['understand', 'discover', 'gtm', 'trace']);
 
 /**
  * @param {string} lane
