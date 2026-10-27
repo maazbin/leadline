@@ -197,6 +197,11 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal((await executeSend(draft.id)).code, 'permission');
     assert.equal(setChannelMode('email', 'approve', 5, 'agent').code, 'human_only');
     assert.equal(setChannelMode('email', 'approve', 5, 'person').ok, true);
+    const { saveDesk } = await import('../src/kernel/desk.js');
+    assert.equal(saveDesk({ running: 1, full_power: 1, adaptability: 1 }, 'person').ok, true);
+    assert.equal(plan().tool, 'execute_send');
+    assert.equal(canSend(draft.id).ok, true);
+    assert.equal(saveDesk({ running: 1, full_power: 0, adaptability: 1 }, 'person').ok, true);
     assert.equal(plan().tool, 'request_approval');
     assert.equal(requestApproval(draft.id).status, 'awaiting_approval');
     assert.equal(plan().step, 'await_approval');
@@ -302,29 +307,34 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     const savedPage = await fetch(`${origin}/setup`);
     assert.match(await savedPage.text(), /Harbor Studio/);
     const desk = await (await fetch(`${origin}/`)).text();
-    assert.match(desk, /role="tablist"/);
     assert.match(desk, /Where it stuck/);
-    assert.match(desk, /Crew/);
-    assert.match(desk, /The master checked the crew/);
-    assert.match(desk, /The required lanes are working/);
     assert.match(desk, /Nothing is stuck/);
-    assert.match(desk, /href="\/\?tab=persona"/);
-    assert.match(desk, /href="\/\?tab=trends"/);
-    const persona = await (await fetch(`${origin}/?tab=persona`)).text();
+    assert.match(desk, /href="\/plan"/);
+    assert.match(desk, /href="\/crew"/);
+    assert.match(desk, /href="\/persona"/);
+    const crew = await (await fetch(`${origin}/crew`)).text();
+    assert.match(crew, /The master checked the crew/);
+    assert.match(crew, /The required lanes are working/);
+    assert.match(crew, /Understand/);
+    assert.match(crew, /Reach/);
+    const persona = await (await fetch(`${origin}/persona`)).text();
     assert.match(persona, /Harbor Studio/);
     assert.match(persona, /Founders of small software firms/);
-    const questions = await (await fetch(`${origin}/?tab=questions`)).text();
+    const questions = await (await fetch(`${origin}/questions`)).text();
     assert.match(questions, /Who it is for/);
     assert.match(questions, /A desk that keeps outreach/);
-    const trends = await (await fetch(`${origin}/?tab=trends`)).text();
+    const trends = await (await fetch(`${origin}/trends`)).text();
     assert.match(trends, /<svg/);
-    const results = await (await fetch(`${origin}/?tab=results`)).text();
+    const results = await (await fetch(`${origin}/results`)).text();
     assert.match(results, /What worked/);
     assert.match(results, /What did not work/);
-    const tracking = await (await fetch(`${origin}/?tab=tracking`)).text();
+    const tracking = await (await fetch(`${origin}/tracking`)).text();
     assert.match(tracking, /Platforms today/);
     assert.match(tracking, /Where it stuck/);
-    const planPage = await (await fetch(`${origin}/?tab=plan`)).text();
+    const legacy = await fetch(`${origin}/?tab=trends`, { redirect: 'manual' });
+    assert.equal(legacy.status, 303);
+    assert.equal(legacy.headers.get('location'), '/trends');
+    const planPage = await (await fetch(`${origin}/plan`)).text();
     assert.match(planPage, /Today's plan/);
     assert.match(planPage, /Nothing planned yet/);
     assert.match(planPage, /name="new_body"/);
@@ -334,7 +344,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
       redirect: 'manual',
     });
     assert.equal(planPosted.status, 303);
-    assert.equal(planPosted.headers.get('location'), '/?tab=plan&ok=plan');
+    assert.equal(planPosted.headers.get('location'), '/plan?ok=plan');
     const planSaved = await (await fetch(`${origin}${planPosted.headers.get('location')}`)).text();
     assert.match(planSaved, /Plan saved/);
     assert.match(planSaved, /Test day/);
@@ -410,7 +420,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(permsPost.status, 303);
     assert.match(await (await fetch(`${origin}/permissions`)).text(), /approve/);
 
-    const { saveDesk, getSettings } = await import('../src/kernel/desk.js');
+    const { getSettings } = await import('../src/kernel/desk.js');
     const { nextStrategy, trainStrategy, listStrategies } = await import('../src/kernel/strategies.js');
     const { saveLead: saveAnother, setFit: fitAnother } = await import('../src/discover/leads.js');
     const { draftMessage: draftAnother } = await import('../src/reach/messages.js');
@@ -447,6 +457,9 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(flipped.status, 303);
     assert.match(flipped.headers.get('location') || '', /\/settings\?ok=power_on/);
     assert.match(await (await fetch(`${origin}/settings`)).text(), /Full power is on/);
+    const reachOn = await (await fetch(`${origin}/reach`)).text();
+    assert.match(reachOn, /Full power is on/);
+    assert.doesNotMatch(reachOn, /Approve send/);
     assert.match(await (await fetch(`${origin}/`)).text(), /What to do/);
     assert.match(await (await fetch(`${origin}/learn`)).text(), /Try this next/);
 
@@ -455,6 +468,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
       const { chromium } = await import('playwright-core');
       const browser = await chromium.launch({ executablePath: exe, headless: true });
       const page = await browser.newPage();
+      try {
       await page.goto(`${origin}/setup`);
       assert.match(await page.locator('body').innerText(), /Sign in to those accounts/);
       assert.equal(await page.inputValue('[name=name]'), 'Harbor Studio');
@@ -472,10 +486,20 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
       assert.match(await page.locator('body').innerText(), /Settings saved/);
       await page.goto(`${origin}/`);
       assert.match(await page.locator('body').innerText(), /What to do/);
+      await page.locator('aside').getByRole('link', { name: 'Agents', exact: true }).click();
+      await page.waitForURL(/\/crew$/);
+      assert.match(await page.locator('body').innerText(), /The crew/);
+      await page.locator('aside').getByRole('link', { name: 'Plan', exact: true }).click();
+      await page.waitForURL(/\/plan$/);
+      assert.match(await page.locator('body').innerText(), /Today's plan/);
+      await page.goto(`${origin}/reach`);
+      assert.doesNotMatch(await page.locator('body').innerText(), /Approve send/);
       await page.goto(`${origin}/learn`);
       await page.getByRole('button', { name: 'This is wrong' }).first().click();
       await page.waitForURL(/\/learn\?ok=trained/);
-      await browser.close();
+      } finally {
+        await browser.close();
+      }
     }
 
     assert.ok(get("SELECT status FROM messages WHERE id = ?", draft.id).status === 'sent');

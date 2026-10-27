@@ -10,14 +10,24 @@ import { esc } from '../kernel/text.js';
 import { ERRORS, OKS, STEPS } from './copy.js';
 import { CSS } from './styles.js';
 
-const NAV = [
+const DESK = [
   ['/', 'Today', 'kernel'],
-  ['/settings', 'Settings', 'kernel'],
+  ['/plan', 'Plan', 'kernel'],
+  ['/questions', 'Questions', 'kernel'],
+  ['/persona', 'Persona', 'kernel'],
+  ['/trends', 'Trends', 'kernel'],
+  ['/results', 'Results', 'kernel'],
+  ['/tracking', 'Tracking', 'kernel'],
+  ['/crew', 'Agents', 'kernel'],
+];
+
+const WORK = [
   ['/setup', 'Understand', 'understand'],
   ['/discover', 'Discover', 'discover'],
   ['/reach', 'Reach', 'reach'],
   ['/create', 'Create', 'create'],
   ['/gtm', 'GTM', 'gtm'],
+  ['/settings', 'Settings', 'kernel'],
   ['/browser', 'Browser', 'kernel'],
   ['/learn', 'Memory', 'kernel'],
 ];
@@ -43,8 +53,8 @@ function powerBar() {
     <div>
       <h2>${on ? 'Full power is on' : 'Full power'}</h2>
       <p>${on
-        ? 'Email, LinkedIn, and X send without asking. A captcha still waits for you.'
-        : 'Turn this on and email, forms, and outreach go out without a question each time. Prepare and Off still wait.'}</p>
+        ? 'Allow messages go out. Reach does not ask for approval. Prepare and Off still wait. A captcha still stops that page.'
+        : 'Turn this on and Allow messages go out without an approval. Prepare and Off still wait.'}</p>
     </div>
     <button type="submit" name="power" value="${on ? '0' : '1'}">${on ? 'Turn off' : 'Turn on full power'}</button>
   </form>`;
@@ -61,17 +71,21 @@ export function field(label, name, value, opts = {}) {
 }
 
 /**
- * @param {{ team: string, title: string, kicker: string, body: string }} page
+ * @param {Array<[string, string, string]>} items
+ * @param {{ team: string, title: string, nav?: string }} page
  */
-export function shell(page) {
-  const step = plan();
-  const nav = NAV.map(([href, label, team]) => {
+function navLinks(items, page) {
+  return items.map(([href, label, team]) => {
     const kernelActive = page.team === 'kernel' && label.toLowerCase() === String(page.nav || page.title).toLowerCase();
     const on = page.team !== 'kernel'
       ? (team === page.team ? ' class="active"' : '')
       : (kernelActive ? ' class="active"' : '');
     return `<a href="${href}" data-team="${team}"${on}>${label}</a>`;
   }).join('');
+}
+
+export function shell(page) {
+  const step = plan();
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -84,8 +98,11 @@ export function shell(page) {
   <div class="app">
     <aside class="rail">
       <div class="brand">Leadline<small>Local go-to-market</small></div>
-      <nav>${nav}</nav>
-      <p>Full power sends without asking. A captcha waits for you, and the rest of the desk keeps moving.</p>
+      <p class="rail-label">Desk</p>
+      <nav>${navLinks(DESK, page)}</nav>
+      <p class="rail-label">Work</p>
+      <nav>${navLinks(WORK, page)}</nav>
+      <p>Full power sends an Allow message. Reach does not ask for a separate approval. A captcha stops that page, and the rest of the desk keeps moving.</p>
     </aside>
     <main>
       <header class="top">
@@ -95,7 +112,6 @@ export function shell(page) {
         </div>
         <div class="flow">${esc(step.flow)} · ${esc(STEPS[step.step] || step.step)}</div>
       </header>
-      ${page.tabs || ''}
       ${powerBar()}
       ${page.body}
     </main>

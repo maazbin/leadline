@@ -40,6 +40,7 @@ button, input, textarea, select { font: inherit; color: inherit; }
 }
 .brand { font-family: Georgia, "Iowan Old Style", serif; font-size: 28px; letter-spacing: -0.03em; }
 .brand small { display: block; margin-top: 4px; color: var(--muted); font-family: "Segoe UI", sans-serif; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+.rail-label { margin: 8px 0 0; color: var(--muted); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
 nav { display: flex; flex-direction: column; gap: 2px; }
 nav a {
   text-decoration: none;
@@ -171,15 +172,6 @@ pre.preview {
 .plan-item { display: grid; grid-template-columns: 78px 1fr auto; gap: 10px; align-items: start; margin: 0 0 12px; }
 .plan-item textarea { min-height: 64px; }
 .plan-done, .plan-remove { display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; padding-top: 10px; }
-nav.tabbar { flex-direction: row; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
-.tabbar a {
-  text-decoration: none;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 8px 14px;
-  color: var(--muted);
-}
-.tabbar a[aria-selected="true"] { background: var(--text); color: #1a1208; border-color: var(--text); }
 .chart { width: 100%; height: auto; display: block; }
 .persona { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; margin-bottom: 16px; }
 .kv { display: grid; grid-template-columns: 140px 1fr; gap: 8px 12px; margin: 0; }

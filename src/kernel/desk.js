@@ -61,7 +61,14 @@ export function saveDesk(input, actor) {
     running, full, adapt, nowIso(),
   );
   recordEvent('kernel', 'desk', 'settings', `run ${running} power ${full} adapt ${adapt}`);
+  if (full) alignReachWithFullPower();
   return { ok: true, running, full_power: full, adaptability: adapt };
+}
+
+/** Full power means Reach sends. Ask-first is the state when Full power is off. */
+export function alignReachWithFullPower() {
+  if (agentMode('reach') === 'auto') return;
+  saveAgentMode('reach', 'auto', 'person');
 }
 
 /** @returns {'unasked' | 'yes' | 'no'} */

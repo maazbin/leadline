@@ -46,6 +46,8 @@ Every file under `src/` starts with:
 
 - Escape every value that enters HTML with `esc`.
 - Pages call team modules. They do not open SQL of their own except the browser and memory pages, which only read.
+- One screen, one file, one route under `src/web/pages/`. The desk screens are `/`, `/plan`, `/questions`, `/persona`, `/trends`, `/results`, `/tracking`, and `/crew`. Do not put those screens back into one file or one `?tab=` page.
+- A page file stays readable in one pass. A helper two screens share goes in a small module such as `src/web/format.js` or `src/web/pages/stalls.js`. Do not grow one file until it holds the whole desk.
 - Bind `127.0.0.1` only.
 
 ## Checks

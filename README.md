@@ -14,7 +14,26 @@ The agent asks once: **Should I start Leadline?**
 | **Yes, but ask before each send.** | Starts the same desk. Reach waits for you before each send. |
 | **No.** | Stops. |
 
-Full power is the bar under the title. Allow plus Full power sends. Allow without Full power asks you on Reach. Prepare writes the draft and holds it. Don't use leaves the platform closed. A captcha, a login, or a restriction stops that one page. The rest of the desk keeps moving.
+## Full power
+
+A yes turns it on. The bar on every screen turns it off again.
+
+When it is on:
+
+- Reach sends an Allow message. It does not wait for a separate approval.
+- Email, LinkedIn, and X move from Prepare to Allow. Any other platform stays on the switch you already set.
+- Understand, Discover, GTM, Trace, and Reach are on.
+- A drafted campaign starts on the next pass while Run is on.
+- The daily cap still holds. Zero still blocks that platform for the day.
+- A captcha, a login, or a restriction stops that one page. The other platforms continue.
+- Prepare writes the draft and holds it. Don't use leaves the platform closed.
+- Create still waits for you to publish. Virality still leaves the post to you.
+
+When it is off, Reach asks before each send.
+
+## The desk
+
+The desk is several screens, each with its own path: Today, Plan, Questions, Persona, Trends, Results, Tracking, and Agents. Agents is the monitoring screen. The master writes one card per lane there, about every 20 seconds. Work lives on its own screens: Understand, Discover, Reach, Create, GTM, Settings, Browser, and Memory.
 
 <p align="center">
   <img src="docs/screenshots/today.png" alt="Today. Full power is on, and one message can go out." width="980">
@@ -22,9 +41,7 @@ Full power is the bar under the title. Allow plus Full power sends. Allow withou
 
 <p align="center"><i>Today. One next move, in plain language. The people in these pictures are a sample campaign on a local database. They are not a customer list.</i></p>
 
-## The desk
-
-One screen. The day is filed in these rooms.
+The day is filed in these rooms.
 
 <table>
   <tr>
