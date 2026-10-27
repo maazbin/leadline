@@ -27,9 +27,33 @@ const WORK = [
   ['/reach', 'Reach', 'reach'],
   ['/create', 'Create', 'create'],
   ['/gtm', 'GTM', 'gtm'],
+];
+
+const CONTROL = [
+  ['/settings', 'Settings', 'kernel'],
+  ['/permissions', 'Permissions', 'kernel'],
   ['/browser', 'Browser', 'kernel'],
   ['/learn', 'Memory', 'kernel'],
-  ['/settings', 'Settings', 'kernel'],
+];
+
+const PLACES = [
+  { label: 'Today' },
+  { label: 'Crew', group: 'Desk', groupHref: '/#desk' },
+  { label: 'Plan', group: 'Desk', groupHref: '/#desk' },
+  { label: 'Questions', group: 'Desk', groupHref: '/#desk' },
+  { label: 'Persona', group: 'Desk', groupHref: '/#desk' },
+  { label: 'Trends', group: 'Desk', groupHref: '/#desk' },
+  { label: 'Results', group: 'Desk', groupHref: '/#desk' },
+  { label: 'Tracking', group: 'Desk', groupHref: '/#desk' },
+  { label: 'Understand', group: 'Work', groupHref: '/#work' },
+  { label: 'Discover', group: 'Work', groupHref: '/#work' },
+  { label: 'Reach', group: 'Work', groupHref: '/#work' },
+  { label: 'Create', group: 'Work', groupHref: '/#work' },
+  { label: 'GTM', group: 'Work', groupHref: '/#work' },
+  { label: 'Settings', group: 'Control', groupHref: '/#control' },
+  { label: 'Browser', group: 'Control', groupHref: '/#control' },
+  { label: 'Memory', group: 'Control', groupHref: '/#control' },
+  { label: 'Permissions', group: 'Control', groupHref: '/#control', parent: { href: '/settings', label: 'Settings' } },
 ];
 
 /**
@@ -80,8 +104,31 @@ function navLinks(items, page) {
     const on = page.team !== 'kernel'
       ? (team === page.team ? ' class="active"' : '')
       : (kernelActive ? ' class="active"' : '');
-    return `<a href="${href}" data-team="${team}"${on}>${label}</a>`;
+    const current = on ? ' aria-current="page"' : '';
+    return `<a href="${href}" data-team="${team}"${on}${current}>${esc(label)}</a>`;
   }).join('');
+}
+
+/** @param {{ title: string, nav?: string }} page */
+function breadcrumb(page) {
+  const name = String(page.nav || page.title);
+  const place = PLACES.find((row) => row.label.toLowerCase() === name.toLowerCase());
+  const trail = [{ href: '/', label: 'Today' }];
+  if (place && place.label !== 'Today') {
+    if (place.group) trail.push({ href: place.groupHref, label: place.group });
+    if (place.parent) trail.push(place.parent);
+    trail.push({ label: place.label });
+  } else if (!place) {
+    trail.push({ label: name });
+  }
+  const items = trail.map((item, index) => {
+    const last = index === trail.length - 1;
+    const label = esc(item.label);
+    const body = last ? `<span aria-current="page">${label}</span>` : `<a href="${esc(item.href)}">${label}</a>`;
+    const sep = index ? '<span class="sep" aria-hidden="true">/</span>' : '';
+    return `<li>${sep}${body}</li>`;
+  }).join('');
+  return `<nav class="crumbs" aria-label="Breadcrumb"><ol>${items}</ol></nav>`;
 }
 
 export function shell(page) {
@@ -97,16 +144,24 @@ export function shell(page) {
 <body>
   <div class="app">
     <aside class="rail">
-      <div class="brand">Leadline<small>Local go-to-market</small></div>
-      <p class="rail-label">Desk</p>
-      <nav>${navLinks(DESK, page)}</nav>
-      <p class="rail-label">Work</p>
-      <nav>${navLinks(WORK, page)}</nav>
+      <a class="brand" href="/">Leadline<small>Local go-to-market</small></a>
+      <nav class="rail-nav" aria-label="Desk">
+        <p class="rail-label">Desk</p>
+        ${navLinks(DESK, page)}
+      </nav>
+      <nav class="rail-nav" aria-label="Work">
+        <p class="rail-label">Work</p>
+        ${navLinks(WORK, page)}
+      </nav>
+      <nav class="rail-nav" aria-label="Control">
+        <p class="rail-label">Control</p>
+        ${navLinks(CONTROL, page)}
+      </nav>
     </aside>
     <main>
       <header class="top">
         <div>
-          <p class="kicker">${esc(page.kicker)}</p>
+          ${breadcrumb(page)}
           <h1>${esc(page.title)}</h1>
         </div>
         <div class="flow">${esc(step.flow)} · ${esc(STEPS[step.step] || step.step)}</div>

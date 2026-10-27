@@ -314,6 +314,10 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(desk, /href="\/plan"/);
     assert.match(desk, /href="\/persona"/);
     assert.match(desk, /href="\/setup"/);
+    assert.match(desk, /id="desk"/);
+    assert.match(desk, /id="work"/);
+    assert.match(desk, /id="control"/);
+    assert.match(desk, /aria-current="page">Today/);
     assert.doesNotMatch(desk, /Where it stuck/);
     const crew = await (await fetch(`${origin}/crew`)).text();
     assert.match(crew, /<svg class="crew-map"/);
@@ -325,6 +329,13 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(crew, /href="\/persona"/);
     assert.match(crew, /Where it stuck/);
     assert.match(crew, /Nothing is stuck/);
+    assert.match(crew, /aria-label="Breadcrumb"/);
+    assert.match(crew, /href="\/#desk"/);
+    assert.match(crew, /aria-current="page">Crew/);
+    const reachNav = await (await fetch(`${origin}/reach`)).text();
+    assert.match(reachNav, /aria-label="Breadcrumb"/);
+    assert.match(reachNav, /href="\/#work"/);
+    assert.match(reachNav, /aria-current="page">Reach/);
     const persona = await (await fetch(`${origin}/persona`)).text();
     assert.match(persona, /Harbor Studio/);
     assert.match(persona, /Founders of small software firms/);
@@ -500,6 +511,9 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
       await page.locator('aside').getByRole('link', { name: 'Plan', exact: true }).click();
       await page.waitForURL(/\/plan$/);
       assert.match(await page.locator('body').innerText(), /Today's plan/);
+      assert.match(await page.locator('nav.crumbs').innerText(), /Today\s*\/\s*Desk\s*\/\s*Plan/);
+      await page.locator('nav.crumbs').getByRole('link', { name: 'Today', exact: true }).click();
+      await page.waitForURL(/\/$/);
       await page.goto(`${origin}/reach`);
       assert.doesNotMatch(await page.locator('body').innerText(), /Approve send/);
       await page.goto(`${origin}/learn`);

@@ -38,6 +38,7 @@ button, input, textarea, select { font: inherit; color: inherit; }
   flex-direction: column;
   gap: 18px;
 }
+a.brand { text-decoration: none; color: inherit; display: block; }
 .brand { font-family: Georgia, "Iowan Old Style", serif; font-size: 28px; letter-spacing: -0.03em; }
 .brand small { display: block; margin-top: 4px; color: var(--muted); font-family: "Segoe UI", sans-serif; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
 .rail-label { margin: 14px 0 0; color: var(--muted); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
@@ -59,6 +60,12 @@ nav a[data-team="kernel"].active { box-shadow: inset 3px 0 0 var(--kernel); }
 main { padding: 28px 32px 64px; max-width: 1080px; }
 .top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-end; margin-bottom: 22px; }
 .kicker { margin: 0 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; }
+.crumbs ol { display: flex; flex-wrap: wrap; align-items: center; list-style: none; margin: 0 0 8px; padding: 0; gap: 8px; }
+.crumbs li { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.crumbs .sep { color: var(--muted); }
+.crumbs a { color: var(--text); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+.crumbs [aria-current="page"] { color: var(--text); }
 h1, h2 { font-family: Georgia, "Iowan Old Style", serif; font-weight: 500; letter-spacing: -0.03em; }
 h1 { margin: 0; font-size: 40px; }
 h2 { margin: 0 0 12px; font-size: 26px; }
