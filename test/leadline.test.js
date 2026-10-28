@@ -323,6 +323,11 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.doesNotMatch(desk, /Where it stuck/);
     const crew = await (await fetch(`${origin}/crew`)).text();
     assert.match(crew, /<svg class="crew-map"/);
+    assert.match(crew, /class="edge-label"/);
+    assert.match(crew, /hands the profile/);
+    assert.match(crew, /hands who fits/);
+    assert.match(crew, /hands the campaign/);
+    assert.match(crew, /hands one pattern/);
     assert.match(crew, /The master checked the crew/);
     assert.match(crew, /The required lanes are working/);
     assert.match(crew, /Understand/);
@@ -335,6 +340,8 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(crew, /href="\/#desk"/);
     assert.match(crew, /aria-current="page">Crew/);
     const reachNav = await (await fetch(`${origin}/reach`)).text();
+    assert.match(reachNav, /Reads who fits from/);
+    assert.match(reachNav, /Crew graph/);
     assert.match(reachNav, /aria-label="Breadcrumb"/);
     assert.match(reachNav, /href="\/#work"/);
     assert.match(reachNav, /aria-current="page">Reach/);

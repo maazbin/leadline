@@ -61,7 +61,7 @@ export function pipelineView() {
   ].join('');
   return `<ol class="pipeline" aria-label="Pipeline">${flow}</ol>
     <div class="beside">
-      <p class="muted">${power ? 'Beside the day. Full power posts these.' : 'Beside the day. These do not send.'}</p>
+      <p class="muted">${power ? 'Beside the day. Full power posts these.' : 'Beside the day. These do not send.'} Create and Virality take the campaign from GTM. Reach reads who fits, and that campaign. Trace records where Reach stuck. <a href="/crew">The crew graph names every handoff.</a></p>
       <div class="beside-row">${beside}</div>
     </div>`;
 }

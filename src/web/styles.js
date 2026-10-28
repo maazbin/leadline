@@ -254,7 +254,12 @@ pre.preview {
 .crew-map .node.you, .crew-map .node.master { stroke: var(--kernel); }
 .crew-map .node.master { stroke: var(--reach); }
 .crew-map text { fill: var(--text); font-size: 15px; font-family: Georgia, "Iowan Old Style", serif; }
-.crew-map .sub { fill: var(--muted); font-size: 11px; font-family: "Segoe UI", sans-serif; }
+.crew-map .sub, .crew-map .hint, .crew-map .edge-label { fill: var(--muted); font-size: 11px; font-family: "Segoe UI", sans-serif; }
+.crew-map .hint { font-size: 10px; }
+.hops { list-style: none; padding: 0; margin: 0; }
+.hops li { padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.45; }
+.lane-hint { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--kernel); border-radius: 12px; padding: 10px 14px; margin: 0 0 16px; color: var(--muted); font-size: 14px; line-height: 1.45; }
+.lane-hint a { color: var(--text); }
 .legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 0 0 16px; font-size: 13px; }
 .legend .working { color: var(--good); }
 .legend .waiting { color: var(--reach); }
