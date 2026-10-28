@@ -31,8 +31,8 @@ export function crewPage(query) {
   const checked = lanes.find((row) => row.reviewedAt);
   const whenChecked = checked ? when(checked.reviewedAt) : '';
   const intro = whenChecked
-    ? `The master checked the crew at ${whenChecked}. Create and Virality take the campaign from GTM. The lines name what crosses.`
-    : 'The master has not checked the crew yet. The check runs about every 20 seconds while the desk is open. The lines name what crosses.';
+    ? `The master checked the crew at ${whenChecked}. Create and Virality take the campaign from GTM. Fix takes the stop from Trace. The lines name what crosses.`
+    : 'The master has not checked the crew yet. The check runs about every 20 seconds while the desk is open. Fix takes the stop from Trace. The lines name what crosses.';
   const stuck = lanes.filter((row) => row.status === 'stuck');
   const stuckList = stuck.length
     ? `<ul class="log">${stuck.map((row) => `<li><strong>${esc(row.label)}</strong> — ${esc(row.detail)}</li>`).join('')}</ul>`

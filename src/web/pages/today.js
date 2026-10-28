@@ -58,6 +58,7 @@ const GROUPS = [
     ['/reach', 'Reach', 'One message', 'reach'],
     ['/create', 'Create', 'Posts', 'create'],
     ['/gtm', 'GTM', 'The campaign', 'gtm'],
+    ['/fix', 'Fix', 'Where a stop becomes a branch', 'fix'],
   ]],
   ['control', 'Control', [
     ['/settings', 'Settings', 'Run and the switches', 'kernel'],

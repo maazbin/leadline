@@ -279,7 +279,8 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     const { saveAgentMode } = await import('../src/kernel/desk.js');
     const looked = reviewLedger();
     assert.equal(looked.ok, true);
-    assert.equal(looked.lanes.length, 7);
+    assert.equal(looked.lanes.length, 8);
+    assert.equal(looked.lanes.some((row) => row.agent === 'fix'), true);
     assert.equal(looked.fine, true);
     assert.equal(saveAgentMode('trace', 'off', 'person').ok, true);
     const missed = reviewLedger();
@@ -290,6 +291,16 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     const healed = reviewLedger();
     assert.equal(healed.lanes.find((row) => row.agent === 'trace').status, 'working');
     assert.equal(healed.fine, true);
+    assert.equal(saveAgentMode('fix', 'off', 'person').ok, true);
+    const fixOff = reviewLedger();
+    assert.equal(fixOff.fine, false);
+    assert.equal(fixOff.lanes.find((row) => row.agent === 'fix').status, 'stuck');
+    assert.match(fixOff.lanes.find((row) => row.agent === 'fix').detail, /Turn it on in Settings/);
+    assert.equal(saveAgentMode('fix', 'auto', 'person').ok, true);
+    const fixOn = reviewLedger();
+    assert.equal(fixOn.lanes.find((row) => row.agent === 'fix').status, 'working');
+    assert.match(fixOn.lanes.find((row) => row.agent === 'fix').detail, /Nothing is waiting on a fix|does not send or merge/);
+    assert.equal(fixOn.fine, true);
     assert.equal((await callTool('approve_message', { id: 1 })).code, 'unknown_tool');
     assert.equal((await callTool('save_lead', {})).code === 'needs_profile' || (await callTool('save_lead', {})).code === 'bad_source', true);
 
@@ -316,6 +327,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(desk, /href="\/plan"/);
     assert.match(desk, /href="\/persona"/);
     assert.match(desk, /href="\/setup"/);
+    assert.match(desk, /href="\/fix"/);
     assert.match(desk, /id="desk"/);
     assert.match(desk, /id="work"/);
     assert.match(desk, /id="control"/);
@@ -328,6 +340,8 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(crew, /hands who fits/);
     assert.match(crew, /hands the campaign/);
     assert.match(crew, /hands one pattern/);
+    assert.match(crew, /hands the stop/);
+    assert.match(crew, />Fix</);
     assert.match(crew, /The master checked the crew/);
     assert.match(crew, /The required lanes are working/);
     assert.match(crew, /Understand/);
@@ -339,6 +353,14 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(crew, /aria-label="Breadcrumb"/);
     assert.match(crew, /href="\/#desk"/);
     assert.match(crew, /aria-current="page">Crew/);
+    const fixPage = await (await fetch(`${origin}/fix`)).text();
+    assert.match(fixPage, /The stop becomes a branch/);
+    assert.match(fixPage, /Branch from main/);
+    assert.match(fixPage, /does not send/);
+    assert.match(fixPage, /does not merge/);
+    assert.match(fixPage, /aria-current="page">Fix/);
+    assert.match(fixPage, /href="\/#work"/);
+    assert.match(fixPage, /Nothing is stuck|Where it stuck/);
     const reachNav = await (await fetch(`${origin}/reach`)).text();
     assert.match(reachNav, /Reads who fits from/);
     assert.match(reachNav, /Crew graph/);
@@ -351,6 +373,8 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(pipe, /Understand/);
     assert.match(pipe, /Reach/);
     assert.match(pipe, /Beside the day/);
+    assert.match(pipe, /href="\/fix"/);
+    assert.match(pipe, /Nothing is waiting on a fix/);
     const persona = await (await fetch(`${origin}/persona`)).text();
     assert.match(persona, /Harbor Studio/);
     assert.match(persona, /Founders of small software firms/);
@@ -647,6 +671,8 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(moving.lanes.find((row) => row.agent === 'create').status, 'working');
     assert.equal(moving.lanes.find((row) => row.agent === 'virality').status, 'working');
     assert.equal(moving.lanes.find((row) => row.agent === 'reach').status, 'working');
+    assert.equal(moving.lanes.find((row) => row.agent === 'fix').status, 'working');
+    assert.match(moving.lanes.find((row) => row.agent === 'fix').detail, /Nothing is waiting on a fix|does not send or merge/);
 
     assert.ok(get("SELECT status FROM messages WHERE id = ?", draft.id).status === 'sent');
   } catch (err) {

@@ -12,7 +12,7 @@ import { esc } from '../../kernel/text.js';
 import { redirect } from '../http.js';
 import { flash, shell } from '../layout.js';
 
-const SIMPLE = new Set(['understand', 'discover', 'gtm', 'trace']);
+const SIMPLE = new Set(['understand', 'discover', 'gtm', 'trace', 'fix']);
 
 /**
  * @param {string} lane
@@ -75,7 +75,7 @@ export function settingsPage(query) {
       </section>
       <section class="card">
         <h2>Lanes</h2>
-        <p class="muted"><a href="/crew">Crew</a> is the graph. Click a lane to open it. The master checks about every 20 seconds. Understand, Discover, GTM, Reach, and Trace should be on while the desk is running. Full power also turns Create and Virality on. They publish and post.</p>
+        <p class="muted"><a href="/crew">Crew</a> is the graph. Click a lane to open it. The master checks about every 20 seconds. Understand, Discover, GTM, Reach, Trace, and Fix should be on while the desk is running. Full power also turns Create, Virality, and Fix on. Create and Virality publish and post. Fix names the branch and does not send or merge.</p>
         <div class="lanes">
           ${LANES.map((lane) => {
             const mode = agentMode(lane.id);

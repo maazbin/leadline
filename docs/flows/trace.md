@@ -2,7 +2,7 @@
 
 Folder: `src/trace/`. Lane: `trace`. Tool: `trace_stalls`.
 
-Trace sits under the master with Understand, Discover, Reach, Create, GTM, and Virality. It writes down where the run stopped. It does not find people, write a note, or send.
+Trace sits under the master with Understand, Discover, Reach, Create, GTM, Virality, and Fix. It writes down where the run stopped. Fix reads that stop. Trace does not find people, write a note, or send.
 
 ## Done
 

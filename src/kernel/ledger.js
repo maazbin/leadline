@@ -5,7 +5,7 @@
 // Reads: lane modes, the profile, the campaign, leads, messages, and open stalls.
 // Writes: agent_ledger. An event only when the set of stuck lanes changes.
 //
-// Required while Run is on: Understand, Discover, GTM, Reach, Trace.
+// Required while Run is on: Understand, Discover, GTM, Reach, Trace, and Fix.
 // Create and Virality may stay off. That is not a fault.
 // The harness calls reviewLedger on each 20s beat and once when the desk starts.
 
@@ -148,7 +148,9 @@ function judge(spec, facts) {
   if (spec.id === 'reach') return judgeReach(mode, facts);
   if (spec.id === 'create') return judgeCreate(mode, facts);
   if (spec.id === 'virality') return judgeVirality(mode, facts);
-  return judgeTrace(facts);
+  if (spec.id === 'trace') return judgeTrace(facts);
+  if (spec.id === 'fix') return judgeFix(mode, facts);
+  return { status: 'working', detail: `${spec.label} is on.` };
 }
 
 /**
@@ -243,4 +245,28 @@ function judgeTrace(facts) {
   if (!open) return { status: 'working', detail: 'Nothing is stuck.' };
   const noun = open === 1 ? 'line' : 'lines';
   return { status: 'working', detail: `Holding ${open} open ${noun}.` };
+}
+
+/**
+ * Names the stop. It does not become stuck because another lane is stuck.
+ * @param {string} mode
+ * @param {ReturnType<typeof readFacts>} facts
+ */
+function judgeFix(mode, facts) {
+  const stall = facts.stalls[0];
+  const waiting = facts.power ? null : facts.waitingLeads[0];
+  const name = String(waiting?.name || 'A person').trim() || 'A person';
+  const stop = stall
+    ? (stall.detail || 'A line is open.')
+    : waiting
+      ? `${name} is marked yes and has no message.`
+      : '';
+  if (!stop) return { status: 'working', detail: 'Nothing is waiting on a fix.' };
+  if (mode === 'draft' || mode === 'approve') {
+    return { status: 'waiting', detail: 'A stop is open. Turn Fix on in Settings. It does not send or merge.' };
+  }
+  return {
+    status: 'working',
+    detail: `${stop} Fix names the branch and the pull request. It does not send or merge.`,
+  };
 }
