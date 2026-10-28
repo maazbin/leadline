@@ -1,6 +1,6 @@
 // src/web/pages/crew.js — the crew as a graph.
 //
-// Owns: /crew. The graph is the lanes. The front shows the same graph and a door for every screen.
+// Owns: /crew. The graph is the lanes and the handoff on each line. The front shows the pipeline and a door for every screen.
 // Must not: send, approve, or change a mode. Does not run a new review on GET.
 // Reads: agent_ledger, open stalls, and recent events.
 
@@ -8,7 +8,7 @@ import { fullPower } from '../../kernel/desk.js';
 import { recentEvents } from '../../kernel/events.js';
 import { ledgerSummary, listLedger } from '../../kernel/ledger.js';
 import { clip, esc } from '../../kernel/text.js';
-import { crewMap } from '../crew-map.js';
+import { crewHops, crewMap, laneHint } from '../crew-map.js';
 import { activityLine, when } from '../format.js';
 import { flash, shell } from '../layout.js';
 import { stallSection } from './stalls.js';
@@ -31,8 +31,8 @@ export function crewPage(query) {
   const checked = lanes.find((row) => row.reviewedAt);
   const whenChecked = checked ? when(checked.reviewedAt) : '';
   const intro = whenChecked
-    ? `The master checked the crew at ${whenChecked}. The same graph is on the front. Create and Virality sit beside the day. The other screens are on the front, and in the list.`
-    : 'The master has not checked the crew yet. The check runs about every 20 seconds while the desk is open. The same graph is on the front.';
+    ? `The master checked the crew at ${whenChecked}. Create and Virality take the campaign from GTM. The lines name what crosses.`
+    : 'The master has not checked the crew yet. The check runs about every 20 seconds while the desk is open. The lines name what crosses.';
   const stuck = lanes.filter((row) => row.status === 'stuck');
   const stuckList = stuck.length
     ? `<ul class="log">${stuck.map((row) => `<li><strong>${esc(row.label)}</strong> — ${esc(row.detail)}</li>`).join('')}</ul>`
@@ -49,13 +49,18 @@ export function crewPage(query) {
         : 'Full power is off. Reach asks before each send.'}</p>
       ${stuckList}
     </section>
+    <p class="muted">Each line is a handoff. The word on the line is what crosses. The small line in the box is the last check.</p>
     ${crewMap(power)}
     <p class="legend"><span class="working">Working</span><span class="waiting">Waiting on you</span><span class="stuck">Needs a look</span><span class="off">Off</span><span class="paused">Paused</span></p>
+    <section class="card">
+      <h2>What crosses</h2>
+      ${crewHops()}
+    </section>
     <section class="card">
       <h2>What just happened</h2>
       <p class="muted">The latest steps, oldest first. Tracking keeps the longer list.</p>
       ${activityPath(recentEvents(6))}
     </section>
-    <div id="trace">${stallSection()}</div>`;
+    <div id="trace">${laneHint('trace')}${stallSection()}</div>`;
   return shell({ team: 'kernel', title: 'Crew', kicker: 'Desk', nav: 'Crew', body });
 }

@@ -8,6 +8,7 @@ import { getSettings, startConsent } from '../../kernel/desk.js';
 import { plan } from '../../kernel/flows.js';
 import { ledgerSummary, listLedger } from '../../kernel/ledger.js';
 import { esc } from '../../kernel/text.js';
+import { laneHint } from '../crew-map.js';
 import { pipelineView } from './pipeline.js';
 import { answerQuestion, getBusiness, openQuestions, profileGaps, saveBusiness } from '../../understand/profile.js';
 import { addLinks, addPdf, listSources, readSource } from '../../understand/sources.js';
@@ -105,6 +106,7 @@ export function setupPage(query) {
   const pages = listPages();
   const body = `
     ${flash(query)}
+    ${laneHint('understand')}
     ${gaps.length
       ? `<p class="banner bad">Still needed: ${esc(gaps.join(', '))}. Type the form, or add a PDF and your website and social profiles.</p>`
       : '<p class="banner good">This profile is complete enough to draft a campaign.</p>'}

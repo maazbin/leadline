@@ -19,6 +19,7 @@ import { listMessages } from '../../reach/rows.js';
 import { openUrl } from '../../browser/act.js';
 import { ERRORS } from '../copy.js';
 import { many, redirect } from '../http.js';
+import { laneHint } from '../crew-map.js';
 import { field, flash, shell } from '../layout.js';
 
 /**
@@ -48,6 +49,7 @@ export function discoverPage(query, extra = {}) {
 
   const body = `
     ${flash(query)}
+    ${laneHint('discover')}
     <div class="split">
       <section class="card">
         <h2>Where to look</h2>
@@ -141,6 +143,7 @@ export function reachPage(query) {
     : 'Each send waits for your approval. The agent cannot approve, and it cannot change a channel mode.';
   const body = `
     ${flash(query)}
+    ${laneHint('reach')}
     <section class="card">
       <h2>${power ? 'Ready' : 'Waiting'}</h2>
       <p class="muted">${intro}</p>
@@ -204,6 +207,7 @@ export function createPage(query) {
   const drafts = listContent({ limit: 20 });
   const body = `
     ${flash(query)}
+    ${laneHint('create')}
     <div class="split">
       <form method="post" action="/create" class="card">
         <h2>New draft</h2>
@@ -260,6 +264,7 @@ export function gtmPage(query) {
   const view = campaignView();
   const body = `
     ${flash(query)}
+    ${laneHint('gtm')}
     <div class="split">
       <form method="post" action="/gtm" class="card">
         <h2>New campaign</h2>

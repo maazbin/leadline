@@ -7,6 +7,7 @@
 import { esc } from '../../kernel/text.js';
 import { resultBoard } from '../../kernel/tracking.js';
 import { stat } from '../format.js';
+import { laneHint } from '../crew-map.js';
 import { flash, shell } from '../layout.js';
 
 /**
@@ -41,6 +42,7 @@ export function resultsPage(query) {
   const messageCount = Object.fromEntries(board.messages.map((row) => [row.status, Number(row.n)]));
   const body = `
     ${flash(query)}
+    ${laneHint('virality')}
     <section class="statgrid">
       ${stat('Worked', worked.length)}
       ${stat('Did not work', failed.length)}
