@@ -19,6 +19,7 @@ const HOPS = [
   { from: 'gtm', to: 'discover', what: 'who to find', short: 'who to find', kind: 'day' },
   { from: 'discover', to: 'reach', what: 'who fits', short: 'who fits', kind: 'day' },
   { from: 'reach', to: 'trace', what: 'where it stuck', short: 'stuck', kind: 'day' },
+  { from: 'trace', to: 'fix', what: 'the stop', short: 'the stop', kind: 'day' },
   { from: 'gtm', to: 'create', what: 'the campaign', short: 'campaign', kind: 'hub' },
   { from: 'gtm', to: 'virality', what: 'one pattern', short: 'one pattern', kind: 'hub' },
 ];
@@ -29,6 +30,7 @@ const PLACE = {
   discover: ['Discover', '/discover'],
   reach: ['Reach', '/reach'],
   trace: ['Trace', '/crew#trace'],
+  fix: ['Fix', '/fix'],
   create: ['Create', '/create'],
   virality: ['Virality', '/results'],
 };
@@ -121,6 +123,7 @@ export function crewMap(power) {
     ['discover', 'Discover', '/discover'],
     ['reach', 'Reach', '/reach'],
     ['trace', 'Trace', '/crew#trace'],
+    ['fix', 'Fix', '/fix'],
   ].map((item, index) => place(item[0], item[1], item[2], PAD + index * (NODE_W + GAP), dayY));
   const sideY = dayY + NODE_H + 72;
   const gtmX = PAD + (NODE_W + GAP);
@@ -138,7 +141,7 @@ export function crewMap(power) {
       <text class="sub" x="${item.cx}" y="${item.cy}" text-anchor="middle">${esc(item.sub)}</text>
       <text class="hint" x="${item.cx}" y="${item.cy + 22}" text-anchor="middle">${esc(item.hint)}</text>
     </a>`).join('');
-  const width = PAD + 5 * NODE_W + 4 * GAP + PAD;
+  const width = PAD + day.length * NODE_W + (day.length - 1) * GAP + PAD;
   const height = sideY + NODE_H + PAD;
   return `<div class="crew-scroll"><svg class="crew-map" viewBox="0 0 ${width} ${height}" aria-label="Crew">${lines}${shapes}</svg></div>`;
 }
@@ -152,7 +155,7 @@ export function crewHops() {
     const detail = byAgent.get(hop.from)?.detail || 'Not checked yet.';
     return `<li><a href="${esc(from[1])}">${esc(from[0])}</a> hands ${esc(hop.what)} to <a href="${esc(to[1])}">${esc(to[0])}</a>. <span class="muted">${esc(clip(detail, 160))}</span></li>`;
   });
-  items.push('<li>Reach also reads the campaign for the words. Trace records the stop and does not send.</li>');
+  items.push('<li>Reach also reads the campaign for the words. Trace records the stop and does not send. Fix names the branch and the pull request. It does not send or merge.</li>');
   return `<ul class="hops">${items.join('')}</ul>`;
 }
 
@@ -173,7 +176,7 @@ export function laneHint(id) {
     ? ` Hands ${out.map((hop) => `${esc(hop.what)} to <a href="${esc(PLACE[hop.to][1])}">${esc(PLACE[hop.to][0])}</a>`).join(', ')}.`
     : '';
   const also = id === 'reach' ? ' The note also uses the campaign.' : '';
-  const quiet = id === 'trace' ? ' Trace does not send.' : '';
+  const quiet = id === 'trace' ? ' Trace does not send.' : id === 'fix' ? ' Fix does not send or merge.' : '';
   const detail = row?.detail ? ` ${esc(clip(row.detail, 180))}` : '';
   return `<p class="lane-hint">${read}${hand}${also}${quiet}${detail} <a href="/crew">Crew graph</a>.</p>`;
 }

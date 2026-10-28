@@ -11,5 +11,6 @@ The main lane is one step at a time. `next_action` is the authority. These pages
 7. [Trace](trace.md) — where the run stopped. It does not send.
 8. [Ledger](ledger.md) — the master reviews the crew every 20 seconds. It does not send.
 9. [Ship](ship.md) — GitHub runs `test`, Copilot reviews, and GitHub merges into main when the check is green.
+10. [Fix](fix.md) — names the stop, opens a branch, and does not send or merge.
 
 Do not add a worker that sends on a timer. The brain calls `execute_send` for one row.

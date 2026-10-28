@@ -35,7 +35,7 @@ When it is off, Reach asks before each send.
 
 ## The desk
 
-The front shows the next step, the pipeline, and a door for every screen, in three groups: Desk, Work, and Control. The pipeline is the day from left to right: Understand, GTM, Discover, Reach, then Trace. Create and Virality sit beside it. Crew keeps the lane graph. The same groups are the list on the left. Every screen shows a breadcrumb back through its group to Today. The graph runs Understand, GTM, Discover, Reach, then Trace. Create and Virality take the campaign from GTM. Each line names what crosses, and that same hint sits on the lane's own screen. Each screen opens on its own page. Each screen is one file, so the agent reads that slice and leaves the rest of the desk alone. About every 20 seconds the master checks the crew. A node says Working, Waiting on you, Needs a look, Off, or Paused. Under the graph, what just happened is a short path.
+The front shows the next step, the pipeline, and a door for every screen, in three groups: Desk, Work, and Control. The pipeline is the day from left to right: Understand, GTM, Discover, Reach, Trace, then Fix. Create and Virality sit beside it. Crew keeps the lane graph. The same groups are the list on the left. Every screen shows a breadcrumb back through its group to Today. The graph runs Understand, GTM, Discover, Reach, Trace, then Fix. Create and Virality take the campaign from GTM. Fix takes the stop from Trace. Each line names what crosses, and that same hint sits on the lane's own screen. Each screen opens on its own page. Each screen is one file, so the agent reads that slice and leaves the rest of the desk alone. About every 20 seconds the master checks the crew. A node says Working, Waiting on you, Needs a look, Off, or Paused. Under the graph, what just happened is a short path.
 
 <p align="center">
   <img src="docs/screenshots/today.png" alt="Today. Full power is on, and one message can go out." width="980">
@@ -78,7 +78,7 @@ The day is filed in these rooms.
 
 You talk to one master. That is the coding agent in the chat. The master calls one lane at a time. About every 20 seconds the desk checks the crew and paints that check on the graph: Working, Waiting on you, Needs a look, Off, or Paused.
 
-While the desk is running, Understand, Discover, GTM, Reach, and Trace stay on. Create and Virality may stay off. Reach is the only sender. A lane that needs a look comes before a new search. The master names the Settings switch and waits. You turn the lane on.
+While the desk is running, Understand, Discover, GTM, Reach, Trace, and Fix stay on. Create and Virality may stay off. Reach is the only sender. Fix names the stop and does not send or merge. A lane that needs a look comes before a new search. The master names the Settings switch and waits. You turn the lane on.
 
 ```mermaid
 flowchart TB
@@ -90,6 +90,7 @@ flowchart TB
   master --> create["Create<br/>publishes on Full power"]
   master --> virality["Virality<br/>posts one pattern"]
   master --> trace["Trace<br/>records the stall"]
+  master --> fix["Fix<br/>names the branch"]
   ledger["Ledger<br/>reviews the crew every 20 seconds"] -.-> understand
   ledger -.-> discover
   ledger -.-> gtm
@@ -97,6 +98,7 @@ flowchart TB
   ledger -.-> create
   ledger -.-> virality
   ledger -.-> trace
+  ledger -.-> fix
 ```
 
 | Lane | On while the desk runs | What this agent does |
@@ -106,6 +108,7 @@ flowchart TB
 | GTM | Yes | Keeps the campaign and the follow-up delay. You press Start. |
 | Reach | Yes | Writes one note and sends one message, then stops. |
 | Trace | Yes | Writes down where the run stopped, and keeps that line until the step is done. |
+| Fix | Yes | Names that stop, opens a branch, and leaves the merge until test is green. It does not send or merge. |
 | Create | On with Full power | Writes the posts. Full power publishes LinkedIn and X. |
 | Virality | On with Full power | Posts one shorter pattern, then records what moved. |
 
@@ -117,6 +120,7 @@ flowchart LR
   gtm --> discover["3 Discover"]
   discover --> reach["4 Reach"]
   reach --> trace["5 Trace"]
+  trace --> fix["6 Fix"]
 ```
 
 ```mermaid

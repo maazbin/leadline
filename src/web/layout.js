@@ -28,6 +28,7 @@ const WORK = [
   ['/reach', 'Reach', 'reach'],
   ['/create', 'Create', 'create'],
   ['/gtm', 'GTM', 'gtm'],
+  ['/fix', 'Fix', 'fix'],
 ];
 
 const CONTROL = [
@@ -52,6 +53,7 @@ const PLACES = [
   { label: 'Reach', group: 'Work', groupHref: '/#work' },
   { label: 'Create', group: 'Work', groupHref: '/#work' },
   { label: 'GTM', group: 'Work', groupHref: '/#work' },
+  { label: 'Fix', group: 'Work', groupHref: '/#work' },
   { label: 'Settings', group: 'Control', groupHref: '/#control' },
   { label: 'Browser', group: 'Control', groupHref: '/#control' },
   { label: 'Memory', group: 'Control', groupHref: '/#control' },

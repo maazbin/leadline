@@ -65,10 +65,10 @@ export function saveDesk(input, actor) {
   return { ok: true, running, full_power: full, adaptability: adapt };
 }
 
-/** Full power turns Reach, Create, and Virality on. They do the work. Ask-first is when Full power is off. */
+/** Full power turns Reach, Create, Virality, and Fix on. Ask-first is when Full power is off. */
 export function alignWorkWithFullPower() {
   if (!fullPower()) return;
-  for (const agent of ['reach', 'create', 'virality']) {
+  for (const agent of ['reach', 'create', 'virality', 'fix']) {
     if (agentMode(agent) !== 'auto') saveAgentMode(agent, 'auto', 'person');
   }
 }
@@ -116,7 +116,7 @@ export function begin(input, actor) {
     power ? 1 : 0,
     now,
   );
-  for (const agent of ['understand', 'discover', 'gtm', 'trace']) {
+  for (const agent of ['understand', 'discover', 'gtm', 'trace', 'fix']) {
     run('UPDATE agent_permissions SET mode = ?, updated_at = ? WHERE agent = ?', 'auto', now, agent);
   }
   if (power) {

@@ -31,6 +31,7 @@ export const LANES = [
   { id: 'gtm', label: 'GTM', hint: 'Keeps the campaign, the mix, and the follow-up delay.' },
   { id: 'virality', label: 'Virality', hint: 'Changes one thing. Full power posts that one pattern.' },
   { id: 'trace', label: 'Trace', hint: 'Writes down where the run stopped. It does not send.' },
+  { id: 'fix', label: 'Fix', hint: 'Names the stop and the ship rules. It does not send or merge.' },
 ];
 
 export const LANE_IDS = ['reach', ...LANES.map((lane) => lane.id)];
@@ -38,7 +39,7 @@ export const LANE_IDS = ['reach', ...LANES.map((lane) => lane.id)];
 /**
  * Crew the master reviews, in pipeline order.
  * required: the desk expects this lane on while Run is on.
- * Create and Virality may stay off.
+ * Create and Virality may stay off. Fix may not.
  */
 export const CREW = [
   { id: 'understand', label: 'Understand', job: 'Learns what you sell from your form, site, and signed-in profiles.', required: true },
@@ -48,6 +49,7 @@ export const CREW = [
   { id: 'create', label: 'Create', job: 'Writes posts. Full power publishes them on LinkedIn and X.', required: false },
   { id: 'virality', label: 'Virality', job: 'Tries one pattern. Full power posts that one pattern.', required: false },
   { id: 'trace', label: 'Trace', job: 'Writes down where the run stopped.', required: true },
+  { id: 'fix', label: 'Fix', job: 'Names the stop, opens a branch, and leaves the merge until test is green. It does not send.', required: true },
 ];
 
 /** Playbook name for a channel. */

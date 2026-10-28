@@ -53,6 +53,7 @@ export function pipelineView() {
     card(byAgent, 'discover', '/discover', `${counts.qualified} fit`, `${counts.leads} people on the list. ${counts.unreviewed} still unreviewed.`, 3),
     card(byAgent, 'reach', '/reach', `${openNotes} open`, `${counts.sent} sent. ${counts.waiting} waiting on an approval.`, 4),
     card(byAgent, 'trace', '/crew#trace', stalls.length ? `${stalls.length} stuck` : 'Clear', stalls.length ? stalls[0].detail : 'Nothing is stuck.', 5),
+    card(byAgent, 'fix', '/fix', stalls.length ? `${stalls.length} open` : 'Clear', stalls.length ? 'Names the branch. It does not send or merge.' : 'Nothing is waiting on a fix.', 6),
   ];
   const flow = day.map((html, index) => `${index ? '<li class="pipe" aria-hidden="true">→</li>' : ''}<li>${html}</li>`).join('');
   const beside = [
@@ -61,7 +62,7 @@ export function pipelineView() {
   ].join('');
   return `<ol class="pipeline" aria-label="Pipeline">${flow}</ol>
     <div class="beside">
-      <p class="muted">${power ? 'Beside the day. Full power posts these.' : 'Beside the day. These do not send.'} Create and Virality take the campaign from GTM. Reach reads who fits, and that campaign. Trace records where Reach stuck. <a href="/crew">The crew graph names every handoff.</a></p>
+      <p class="muted">${power ? 'Beside the day. Full power posts these.' : 'Beside the day. These do not send.'} Create and Virality take the campaign from GTM. Reach reads who fits, and that campaign. Trace records where Reach stuck. Fix names that stop and the branch. It does not send or merge. <a href="/crew">The crew graph names every handoff.</a></p>
       <div class="beside-row">${beside}</div>
     </div>`;
 }

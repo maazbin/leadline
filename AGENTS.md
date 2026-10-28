@@ -31,7 +31,7 @@ Do not tell the person to run npm, open a terminal, or click Run. You do that.
 3. Do that one step.
 4. Call `next_action` again.
 
-The desk reviews the crew ledger about every 20 seconds, and once when it starts. Call `review_ledger` if you need the check now. `fine` is false when a row is `stuck`. A stuck required lane comes before a new search. You cannot turn a lane on. Name the Settings switch and wait. Do not send just because Reach is stuck. Required while Run is on: Understand, Discover, GTM, Reach, Trace. Create and Virality may stay off. Read `docs/flows/ledger.md`.
+The desk reviews the crew ledger about every 20 seconds, and once when it starts. Call `review_ledger` if you need the check now. `fine` is false when a row is `stuck`. A stuck required lane comes before a new search. You cannot turn a lane on. Name the Settings switch and wait. Do not send just because Reach is stuck. Required while Run is on: Understand, Discover, GTM, Reach, Trace, and Fix. Create and Virality may stay off. Fix names the open stop, then a change leaves on a branch and a pull request. Do not send or merge from Fix, and do not call `gh` on the 20-second pass. Read `docs/flows/ledger.md` and `docs/flows/fix.md`.
 
 `lane` `create` is the content team. It never sends. The default lane is the pipeline: Understand, then a campaign the person starts, then Discover, then Reach.
 
@@ -47,6 +47,7 @@ Until `onboard_status` reports no gaps, the only work is understanding the busin
 | Create | `src/create/` | `docs/flows/create.md` | Draft a post. With Full power on, leave publishing to the desk | Publish a second copy, or mark a post published without the browser click |
 | GTM | `src/gtm/` | `docs/flows/gtm.md` | Create a draft campaign | Press Start |
 | Trace | `src/trace/` | `docs/flows/trace.md` | Record where the run stopped | Send, or clear a stall that is still true |
+| Fix | `/fix` | `docs/flows/fix.md` | Name the stop, branch from main, open a pull request | Send, merge, turn the ruleset off, or open a pull request from the harness |
 | Master ledger | `src/kernel/ledger.js` | `docs/flows/ledger.md` | Review the crew and read who is stuck | Send, or change a lane mode |
 
 Browser memory is `src/browser/` and `docs/flows/browser.md`. Paths live in SQLite. Follow `reached` and `success`. Do not follow `stop` or `refused`.

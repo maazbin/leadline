@@ -12,6 +12,7 @@ import { preferredPort, setBoundPort } from '../kernel/ports.js';
 import { html, json, readForm, redirect } from './http.js';
 import { shell } from './layout.js';
 import { crewPage } from './pages/crew.js';
+import { fixPage } from './pages/fix.js';
 import { beginPost, powerPost, settingsPage, settingsPost } from './pages/desk.js';
 import { personaPage } from './pages/persona.js';
 import { pipelinePage } from './pages/pipeline.js';
@@ -55,6 +56,7 @@ async function handle(req, res) {
   if (req.method === 'GET' && path === '/reach') return html(res, reachPage(query));
   if (req.method === 'GET' && path === '/create') return html(res, createPage(query));
   if (req.method === 'GET' && path === '/gtm') return html(res, gtmPage(query));
+  if (req.method === 'GET' && path === '/fix') return html(res, fixPage(query));
   if (req.method === 'GET' && path === '/permissions') return html(res, permissionsPage(query));
   if (req.method === 'GET' && path === '/browser') return html(res, browserPage(query));
   if (req.method === 'GET' && path === '/learn') return html(res, learnPage(query));
