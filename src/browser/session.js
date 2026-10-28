@@ -40,6 +40,26 @@ export async function getPage() {
   return { ok: true, page };
 }
 
+/** A new tab for one engagement. The caller closes it. Other tools keep the last open tab. */
+export async function freshPage() {
+  if (process.env.LEADLINE_DISABLE_BROWSER === '1') return { ok: false, code: 'browser_disabled' };
+  let conn;
+  try {
+    conn = await connect();
+  } catch (err) {
+    browser = null;
+    return { ok: false, code: 'cdp_down', detail: clip(err.message, 200) };
+  }
+  if (!conn.ok) return conn;
+  const context = conn.browser.contexts()[0];
+  if (!context) return { ok: false, code: 'no_context' };
+  try {
+    return { ok: true, page: await context.newPage() };
+  } catch (err) {
+    return { ok: false, code: 'cdp_down', detail: clip(err.message, 200) };
+  }
+}
+
 /**
  * Title, a short text excerpt, the visible controls, and any wall.
  * @returns {Promise<Record<string, unknown>>}

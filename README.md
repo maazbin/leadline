@@ -178,7 +178,7 @@ The marks name the channels. They belong to their owners.
 - No typed password. A login wall is yours.
 - The master cannot approve a message or mark one sent by hand. `execute_send` is the only sender, and it checks the gate again.
 - A click on Send records the click. Delivery is a separate fact.
-- With Full power on, the desk publishes the LinkedIn or X draft after the words are in the box, and Virality posts one shorter pattern.
+- With Full power on, the desk publishes the LinkedIn or X draft after the words are in the box, Virality posts one shorter pattern, and Reach tries one reply, comment, or DM on X, LinkedIn, or Instagram.
 - With Full power off, Create and Virality wait for you to publish.
 
 ## A later chapter, on Create

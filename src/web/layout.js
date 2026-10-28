@@ -79,8 +79,8 @@ function powerBar() {
     <div>
       <h2>${on ? 'Full power is on' : 'Full power'}</h2>
       <p>${on
-        ? 'Reach writes and sends. Create publishes LinkedIn and X. Virality posts one pattern. A captcha still stops that page.'
-        : 'Turn this on and the lanes do the work. Reach sends, Create publishes, and Virality posts one pattern.'}</p>
+        ? 'Reach writes, sends, replies, and comments. Create publishes LinkedIn and X. Virality posts one pattern. A captcha still stops that page.'
+        : 'Turn this on and the lanes do the work. Reach sends, replies, and comments. Create publishes, and Virality posts one pattern.'}</p>
     </div>
     <button type="submit" name="power" value="${on ? '0' : '1'}">${on ? 'Turn off' : 'Turn on full power'}</button>
   </form>`;

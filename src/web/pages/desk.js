@@ -68,7 +68,7 @@ export function settingsPage(query) {
         <p class="muted">The agent asks once, then runs npm and sets these. Full power sends email, forms, and outreach without asking. Adapt prefers what worked. A step you mark wrong stays blocked. Change a switch here if you want a different rule.</p>
         <div class="switches">
           <label class="switch"><input type="checkbox" name="running" value="1" ${Number(settings.running) === 1 ? 'checked' : ''}><span><strong>Run</strong><small>Keep going after you leave this page. Stop clears this.</small></span></label>
-          <label class="switch"><input type="checkbox" name="full_power" value="1" ${power ? 'checked' : ''}><span><strong>Full power</strong><small>Reach writes and sends. Create publishes LinkedIn and X. Virality posts one pattern. Off on a platform stays off.</small></span></label>
+          <label class="switch"><input type="checkbox" name="full_power" value="1" ${power ? 'checked' : ''}><span><strong>Full power</strong><small>Reach writes, sends, replies, and comments. Create publishes LinkedIn and X. Virality posts one pattern. Off on a platform stays off.</small></span></label>
           <label class="switch"><input type="checkbox" name="adaptability" value="1" ${Number(settings.adaptability) === 1 ? 'checked' : ''}><span><strong>Adapt</strong><small>Use the step that worked. Skip a failed one. Your correction still wins.</small></span></label>
         </div>
         <p class="muted">${esc(reachPlain)} Sends are spaced so a platform does not see a burst. A captcha or a restriction page waits for you, and the other platforms continue.</p>

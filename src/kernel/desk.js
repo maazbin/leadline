@@ -137,7 +137,7 @@ export function begin(input, actor) {
     fullPower: power,
     url: webOrigin(),
     detail: power
-      ? 'Started. Reach writes and sends. Create publishes LinkedIn and X. Virality posts one pattern. You run npm. Do not hand the person a terminal.'
+      ? 'Started. Reach writes, sends, replies, comments, and sends one DM. Create publishes LinkedIn and X. Virality posts one pattern. You run npm. Do not hand the person a terminal.'
       : 'Started. Each send still waits for a yes on Reach. Create and Virality wait for you to publish. You run npm. Do not hand the person a terminal.',
   };
 }
