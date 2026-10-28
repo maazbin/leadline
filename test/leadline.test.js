@@ -448,7 +448,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(await (await fetch(`${origin}/permissions`)).text(), /approve/);
 
     const { getSettings } = await import('../src/kernel/desk.js');
-    const { nextStrategy, trainStrategy, listStrategies } = await import('../src/kernel/strategies.js');
+    const { nextStrategy, trainStrategy, listStrategies, recordStrategy } = await import('../src/kernel/strategies.js');
     const { saveLead: saveAnother, setFit: fitAnother } = await import('../src/discover/leads.js');
     const { draftMessage: draftAnother } = await import('../src/reach/messages.js');
     assert.equal(getSettings().full_power, 0);
@@ -458,6 +458,47 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(trainStrategy('ig-comments', 'wrong', 'Look at the bio first', 'agent').code, 'human_only');
     assert.equal(trainStrategy('ig-comments', 'wrong', 'Look at the bio first', 'person').ok, true);
     assert.equal(nextStrategy('Instagram').id, 'ig-bio');
+    const { nextEngagement, engagementLine, learnEngagement, huntPost } = await import('../src/reach/engage.js');
+    assert.equal(huntPost('I am open to work as a designer'), true);
+    assert.equal(huntPost("We're hiring a designer. Apply now"), false);
+    assert.equal(huntPost('Lunch was good'), false);
+    assert.equal(huntPost('#jobsearch freehire searches jobs'), false);
+    assert.equal(huntPost("How's the job hunt going?"), false);
+    assert.equal(huntPost('Job Search Strategist. When did looking for a job become hard?'), false);
+    assert.equal(huntPost("I'm looking for a job in software."), true);
+    assert.equal(huntPost("If you're job hunting, ICE is hiring"), false);
+    assert.equal(huntPost('I went looking for a software engineering job and ended up researching.'), true);
+    assert.equal(huntPost('If you are interviewing candidates today, choose the one that was laid off.'), false);
+    assert.equal(huntPost('Are you still looking for a job? Depends. Are you hiring?'), false);
+    assert.equal(huntPost('Open to work? Begging for work.'), false);
+    assert.equal(huntPost('#OPENTOWORK Necklace'), false);
+    assert.equal(huntPost("I've been job hunting almost daily for 11 months."), true);
+    assert.equal(huntPost('I am looking for a job to provide food for my family. Please contact me.'), false);
+    assert.equal(huntPost('i am still looking for a job u need me on your sqaud'), false);
+    assert.equal(nextEngagement(), null);
+    for (const channel of ['x', 'linkedin', 'instagram']) {
+      assert.equal(setChannelMode(channel, 'auto', 5, 'person').ok, true);
+    }
+    assert.equal(saveDesk({ running: 0, full_power: 1, adaptability: 1 }, 'person').ok, true);
+    assert.equal(nextEngagement().id, 'x-reply-people');
+    const line = engagementLine({
+      offer_summary: 'JobPilot is a free local job hunter. People are getting interviews. https://github.com/maazbin/jobpilot',
+    });
+    assert.match(line, /JobPilot is a free local job hunter\./);
+    assert.match(line, /https:\/\/github.com\/maazbin\/jobpilot/);
+    assert.doesNotMatch(line, /interviews/);
+    assert.ok(line.length <= 240);
+    assert.equal(recordStrategy('x-reply-people', 'worked', 'Replied once.', 'agent').ok, true);
+    assert.equal(nextEngagement().id, 'li-comment');
+    assert.equal(recordStrategy('li-dm', 'failed', 'Premium wall.', 'agent').ok, true);
+    assert.equal(nextEngagement().id, 'li-comment');
+    assert.equal(learnEngagement(nextEngagement(), { ok: false, code: 'none', detail: 'No post matched.' }).outcome, 'retry');
+    assert.equal(nextEngagement().id, 'ig-comment');
+    for (const channel of ['x', 'linkedin', 'instagram']) {
+      assert.equal(setChannelMode(channel, 'draft', 5, 'person').ok, true);
+    }
+    assert.equal(saveDesk({ running: 0, full_power: 0, adaptability: 1 }, 'person').ok, true);
+    assert.equal(nextEngagement(), null);
     assert.equal(saveDesk({ running: 1, full_power: 1, adaptability: 1 }, 'agent').code, 'human_only');
     assert.equal(saveDesk({ running: 0, full_power: 1, adaptability: 0 }, 'person').ok, true);
     const powered = saveAnother({

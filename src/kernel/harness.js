@@ -2,7 +2,8 @@
 //
 // Owns: the timer that keeps a Run desk moving, and the crew review on that timer.
 // Must not: start when Run is off, send when Reach is off, or do a second browser write in one tick.
-// When Full power is on, one tick may write the next note, publish one post, or post one trial.
+// When Full power is on, one tick may write the next note, publish one post, post one trial,
+// or try one reply, comment, or DM.
 // Must not: solve a captcha. execute_send already stops on one.
 // A linked-in write waits longer than an email. That gap is how accounts stay unblocked.
 
@@ -10,14 +11,16 @@ import { get, run } from './db.js';
 import { deskRunning, fullPower, agentMode, alignWorkWithFullPower } from './desk.js';
 import { plan } from './flows.js';
 import { nowIso } from './time.js';
-import { newestCampaign, setCampaignStatus } from '../gtm/campaigns.js';
+import { activeCampaign, newestCampaign, setCampaignStatus } from '../gtm/campaigns.js';
 import { canSend } from '../reach/gate.js';
 import { listMessages } from '../reach/rows.js';
 import { channelHeld, draftNextNote } from '../reach/note.js';
+import { engagementLine, learnEngagement, nextEngagement } from '../reach/engage.js';
 import { ensureCampaignPost, nextPublishable, markDeskPublished } from '../create/publish.js';
 import { ensureTrial } from '../virality/try.js';
 import { recordStrategy } from './strategies.js';
 import { executeSend, exploreCommunities, publishPost } from '../browser/act.js';
+import { runEngagement } from '../browser/engage.js';
 import { reviewLedger } from './ledger.js';
 import { syncStalls } from '../trace/stalls.js';
 
@@ -136,8 +139,23 @@ async function tickOnce() {
   if (trial.ok) return postOne(trial, 'virality');
 
   const communities = await exploreCommunities();
-  if (communities.code === 'posted') markPace('x');
-  return communities;
+  if (communities.code !== 'idle') {
+    if (communities.code === 'posted') markPace('x');
+    return communities;
+  }
+
+  const step = nextEngagement();
+  if (!step) return { ok: true, code: 'idle', plan: plan() };
+  const campaign = activeCampaign() || newestCampaign();
+  const line = engagementLine(campaign || {});
+  if (!line) return { ok: true, code: 'idle', plan: plan() };
+  const result = await runEngagement({ ...step, line });
+  if (result.code === 'browser_disabled' || result.code === 'held') {
+    return { ok: true, code: 'idle', plan: plan() };
+  }
+  learnEngagement(step, result);
+  markPace(step.channel);
+  return result;
 }
 
 /** Start the loop for this server. A second call does nothing. */

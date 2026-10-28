@@ -28,7 +28,7 @@ Create and Virality may stay Off. That row is `off`, and it is not a fault.
 
 `fine` is true when no row is `stuck`.
 
-When Full power is on, Reach writes and sends, Create publishes LinkedIn and X, and Virality posts one pattern. Prepare and Off on a platform still wait. The monitoring screen is `/crew`. It draws the lanes as a graph. Click a lane to open it. The other screens stay in the side list. Recent activity is a path under the graph.
+When Full power is on, Reach writes and sends, then tries one reply, comment, or DM on X, LinkedIn, or Instagram. Create publishes LinkedIn and X, and Virality posts one pattern. Prepare and Off on a platform still wait. The monitoring screen is `/crew`. It draws the lanes as a graph. Click a lane to open it. The other screens stay in the side list. Recent activity is a path under the graph.
 
 ## Steps
 

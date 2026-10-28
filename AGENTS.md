@@ -16,7 +16,7 @@ Do not tell the person to run npm, open a terminal, or click Run. You do that.
 
 - Do not call `begin` before the person has answered.
 - When Full power is off, do not send a message that is not already allowed. Ask on Reach.
-- When Full power is on, the desk writes the next note, sends it, publishes the LinkedIn or X draft, and posts one Virality pattern. If `next_action` names `execute_send`, send that one message. If the step is `desk_note` or `publish`, do not draft or post a second copy. Still stop on a captcha, a login, or a restriction page, record it, and continue on another platform.
+- When Full power is on, the desk writes the next note, sends it, publishes the LinkedIn or X draft, posts one Virality pattern, and tries one reply, comment, or DM on X, LinkedIn, or Instagram. If `next_action` names `execute_send`, send that one message. If the step is `desk_note` or `publish`, do not draft or post a second copy. Still stop on a captcha, a login, or a restriction page, record it, and continue on another platform. Do not start a Premium trial.
 - Do not mark a message sent. `execute_send` does that only after the button click and the gate.
 - Do not solve a captcha, hide the browser, or change its fingerprint. Stop and `record_encounter`.
 - Do not type a password. A login wall is the person's.

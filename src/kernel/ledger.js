@@ -211,7 +211,7 @@ function judgeReach(mode, facts) {
   }
   return {
     status: 'working',
-    detail: facts.power ? 'Full power is on. Nothing is waiting to send.' : 'Nothing is waiting to send.',
+    detail: facts.power ? 'Full power is on. Reach tries one reply, comment, or DM from the playbook.' : 'Nothing is waiting to send.',
   };
 }
 
