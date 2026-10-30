@@ -2,6 +2,7 @@
 //
 // Owns: the single business row, permission defaults, browser row, flow row.
 // Must not: overwrite a mode, an answer, or a campaign the person already saved.
+// A failed playbook fact may refresh its own row when the person has not marked it worked or try.
 // Writes: business, channel_permissions, browser_state, flow_state.
 
 import { CHANNELS, LANES } from './enums.js';
@@ -51,4 +52,11 @@ export function seed(db) {
   for (const step of PLAYBOOK) {
     insertStep.run(step.id, step.platform, step.when, step.step, step.result, step.evidence, step.sort, now);
   }
+
+  const xDm = PLAYBOOK.find((step) => step.id === 'x-dm');
+  db.prepare(`UPDATE strategies
+    SET step = ?, result = ?, evidence = ?, updated_at = ?
+    WHERE id = 'x-dm' AND result != 'worked' AND human_verdict = ''`).run(
+    xDm.step, xDm.result, xDm.evidence, now,
+  );
 }

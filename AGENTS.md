@@ -23,6 +23,7 @@ Do not tell the person to run npm, open a terminal, or click Run. You do that.
 - Do not invent prices, customers, or proof. Use the profile and `find_answer`. If it is missing, `ask_person` once.
 - Do not message a lead whose fit is not `yes`.
 - Do not send a second message in the same step.
+- An X chat that shows Not Now, asks for an X Number, or has no message box is remembered. The X DM step has failed. Do not keep trying it. Use another platform.
 
 ## Every session
 

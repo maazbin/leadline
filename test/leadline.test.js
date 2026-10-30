@@ -485,6 +485,9 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(getSettings().full_power, 0);
     assert.equal(getSettings().adaptability, 1);
     assert.ok(listStrategies().some((row) => row.id === 'ig-comments'));
+    const remembered = listStrategies().find((row) => row.id === 'x-dm');
+    assert.equal(remembered.result, 'failed');
+    assert.match(remembered.evidence, /Try another platform/);
     assert.equal(nextStrategy('Instagram').id, 'ig-comments');
     assert.equal(trainStrategy('ig-comments', 'wrong', 'Look at the bio first', 'agent').code, 'human_only');
     assert.equal(trainStrategy('ig-comments', 'wrong', 'Look at the bio first', 'person').ok, true);
