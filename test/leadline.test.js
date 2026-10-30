@@ -492,7 +492,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(trainStrategy('ig-comments', 'wrong', 'Look at the bio first', 'agent').code, 'human_only');
     assert.equal(trainStrategy('ig-comments', 'wrong', 'Look at the bio first', 'person').ok, true);
     assert.equal(nextStrategy('Instagram').id, 'ig-bio');
-    const { nextEngagement, engagementLine, learnEngagement, huntPost } = await import('../src/reach/engage.js');
+    const { nextEngagement, engagementLine, learnEngagement, huntPost, alreadyEngaged } = await import('../src/reach/engage.js');
     assert.equal(huntPost('I am open to work as a designer'), true);
     assert.equal(huntPost("We're hiring a designer. Apply now"), false);
     assert.equal(huntPost('Lunch was good'), false);
@@ -507,6 +507,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(huntPost('Open to work? Begging for work.'), false);
     assert.equal(huntPost('#OPENTOWORK Necklace'), false);
     assert.equal(huntPost("I've been job hunting almost daily for 11 months."), true);
+    assert.equal(huntPost('Pray, tell: What sort of questions might one ask to learn if a company treats their engineers well? I am job hunting at the moment.'), false);
     assert.equal(huntPost('I am looking for a job to provide food for my family. Please contact me.'), false);
     assert.equal(huntPost('i am still looking for a job u need me on your sqaud'), false);
     assert.equal(nextEngagement(), null);
@@ -522,6 +523,13 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(line, /https:\/\/github.com\/maazbin\/jobpilot/);
     assert.doesNotMatch(line, /interviews/);
     assert.ok(line.length <= 240);
+    const longLine = engagementLine({
+      offer_summary: 'JobPilot is an MIT-licensed MCP server that turns your coding agent into a job hunter: it drives your logged-in Chrome to apply via email, LinkedIn Easy Apply, ATS forms, and connections, remembers every lead, and turns a stuck page into a branch https://github.com/maazbin/jobpilot',
+    });
+    assert.ok(longLine.length <= 240);
+    assert.match(longLine, /https:\/\/github.com\/maazbin\/jobpilot/);
+    assert.doesNotMatch(longLine, /into a$/);
+    assert.doesNotMatch(longLine, /into a https/);
     assert.equal(recordStrategy('x-reply-people', 'worked', 'Replied once.', 'agent').ok, true);
     assert.equal(nextEngagement().id, 'li-comment');
     assert.equal(recordStrategy('li-dm', 'failed', 'Premium wall.', 'agent').ok, true);
@@ -535,6 +543,12 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(closedDm.outcome, 'stop');
     assert.equal(listStrategies().find((row) => row.id === 'x-dm').result, 'failed');
     assert.equal(nextEngagement().id, 'ig-comment');
+    const duplicate = learnEngagement(
+      { id: 'x-reply-people', action: 'reply', site: 'x.com', channel: 'x' },
+      { ok: true, code: 'duplicate', detail: 'X says this reply was already posted.', ref: 'x:reply:211', clicked: true },
+    );
+    assert.equal(duplicate.outcome, 'reached');
+    assert.equal(alreadyEngaged('x:reply:211'), true);
     for (const channel of ['x', 'linkedin', 'instagram']) {
       assert.equal(setChannelMode(channel, 'draft', 5, 'person').ok, true);
     }
@@ -618,7 +632,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     const { agentMode } = await import('../src/kernel/desk.js');
     const { saveContent, setContentStatus, listContent } = await import('../src/create/drafts.js');
     const { markDeskPublished, nextPublishable } = await import('../src/create/publish.js');
-    const { publishPost, bodyOnPage, xInboxClosedText } = await import('../src/browser/act.js');
+    const { publishPost, bodyOnPage, xInboxClosedText, huntReplyText } = await import('../src/browser/act.js');
     const { shorterHook } = await import('../src/virality/try.js');
     const { extractCommunityLinks, communityLooksRelevant } = await import('../src/discover/communities.js');
     assert.equal(saveDesk({ running: 1, full_power: 0, adaptability: 1 }, 'person').ok, true);
@@ -651,6 +665,8 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(xInboxClosedText('Not Now'), true);
     assert.equal(xInboxClosedText('Enter their X Number'), true);
     assert.equal(xInboxClosedText('Reply\n2'), false);
+    assert.equal(huntReplyText('Open to Work! Seeking opportunities in Agentic AI. Referrals welcome.'), true);
+    assert.equal(huntReplyText('Could structure-aware retrieval be the next big step in RAG?'), false);
     const made = saveContent({
       campaignId: campaign.id,
       channel: 'x',

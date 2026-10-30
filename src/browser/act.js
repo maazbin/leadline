@@ -155,7 +155,8 @@ export function bodyOnPage(excerpt, body) {
  * @param {string} text
  */
 async function fillBox(page, box, text) {
-  await box.click({ timeout: 8000 });
+  const clicked = await box.click({ timeout: 8000 }).then(() => true).catch(() => false);
+  if (!clicked) await focusBox(box);
   const tag = await box.evaluate((node) => node.tagName).catch(() => '');
   if (tag === 'TEXTAREA' || tag === 'INPUT') {
     await box.fill(text);
@@ -339,36 +340,85 @@ function rememberClosedInbox() {
   });
 }
 
+/**
+ * The post to answer is the person's own hunt, not the first tweet on the profile.
+ * @param {string} text
+ */
+export function huntReplyText(text) {
+  const raw = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!raw || raw.includes('?')) return false;
+  return /open to work|looking for|job hunt|referrals|i(?:'m| am) exploring opportunities/i.test(raw);
+}
+
+async function focusBox(box) {
+  await box.evaluate((node) => {
+    node.focus();
+    const selection = window.getSelection();
+    if (!selection) return;
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }).catch(() => {});
+}
+
+/**
+ * Open a reply on the hunt post and wait until the box is actually visible.
+ * @param {import('playwright-core').Page} page
+ */
+async function huntReplyBox(page) {
+  const openBox = page.locator('[data-testid="tweetTextarea_0"]').last();
+  if (await openBox.isVisible().catch(() => false)) return openBox;
+  const articles = page.locator('article[data-testid="tweet"]');
+  const count = Math.min(await articles.count(), 8);
+  let fallback = null;
+  for (let index = 0; index < count; index += 1) {
+    const article = articles.nth(index);
+    const text = await article.innerText().catch(() => '');
+    const reply = article.locator('[data-testid="reply"]').first();
+    if (!(await reply.count())) continue;
+    if (!fallback) fallback = reply;
+    if (!huntReplyText(text)) continue;
+    await reply.click({ timeout: 8000 }).catch(() => {});
+    await page.locator('[data-testid="tweetTextarea_0"]').last().waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
+    const box = page.locator('[data-testid="tweetTextarea_0"]').last();
+    if (await box.isVisible().catch(() => false)) return box;
+  }
+  if (fallback) {
+    await fallback.click({ timeout: 8000 }).catch(() => {});
+    await page.locator('[data-testid="tweetTextarea_0"]').last().waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
+  }
+  const box = page.locator('[data-testid="tweetTextarea_0"]').last();
+  if (await box.isVisible().catch(() => false)) return box;
+  return null;
+}
+
 async function typeXNote(page, body) {
+  await page.waitForSelector('article[data-testid="tweet"], [data-testid="UserName"]', { timeout: 12000 }).catch(() => {});
   if (await xInboxClosed(page)) {
     rememberClosedInbox();
     return { ok: false, code: 'no_composer', detail: 'X showed Not Now or an X Number. This person cannot be DM\'d. Nothing was typed.' };
   }
   const message = page.getByRole('button', { name: /^Message\b/ }).first();
   if ((await message.count()) && (await message.isVisible().catch(() => false))) {
-    await message.click({ timeout: 8000 });
+    await message.click({ timeout: 8000 }).catch(() => {});
     await pace();
     if (await xInboxClosed(page)) {
       rememberClosedInbox();
       return { ok: false, code: 'no_composer', detail: 'X showed Not Now or an X Number. This person cannot be DM\'d. Nothing was typed.' };
     }
     const box = page.locator('[data-testid="dmComposerTextInput"], [role="dialog"] [role="textbox"]').last();
-    if (!(await box.count())) return { ok: false, code: 'no_composer', detail: 'The X message box did not open.' };
-    return fillBox(page, box, body);
-  }
-  const replyBox = page.locator('[data-testid="tweetTextarea_0"]');
-  try {
-    await replyBox.first().waitFor({ state: 'visible', timeout: 8000 });
-  } catch {
-    const open = page.locator('[data-testid="reply"]').first();
-    if (await open.isVisible().catch(() => false)) {
-      await open.click({ timeout: 8000 });
-      await pace();
+    await box.waitFor({ state: 'visible', timeout: 4000 }).catch(() => {});
+    if ((await box.count()) && (await box.isVisible().catch(() => false))) return fillBox(page, box, body);
+    if (/\/i\/chat\//.test(page.url())) {
+      await page.goBack({ timeout: 8000 }).catch(() => {});
+      await page.waitForSelector('article[data-testid="tweet"]', { timeout: 12000 }).catch(() => {});
     }
   }
-  const reply = page.locator('[data-testid="tweetTextarea_0"]').last();
-  if (await reply.isVisible().catch(() => false)) return fillBox(page, reply, body);
-  return { ok: false, code: 'no_composer', detail: 'No Message button and no reply box on this page.' };
+  const reply = await huntReplyBox(page);
+  if (!reply) return { ok: false, code: 'no_composer', detail: 'No Message button and no reply box on this page.' };
+  return fillBox(page, reply, body);
 }
 
 /**
@@ -439,6 +489,12 @@ export async function prepareMessage(messageId) {
   if (!msg) return { ok: false, code: 'missing' };
   if (msg.channel === 'email') {
     if (!msg.lead_email) return { ok: false, code: 'no_email' };
+    const current = await snapshot().catch(() => null);
+    const visible = `${current?.url || ''} ${current?.excerpt || ''}`.toLowerCase();
+    const email = String(msg.lead_email).toLowerCase();
+    if (current?.ok && email && visible.includes(email) && bodyOnPage(current.excerpt || '', msg.body)) {
+      return { ok: true, prepared: true, channel: 'email', snapshot: current };
+    }
     const built = gmailUrl(msg);
     const opened = await openUrl(built.url);
     if (!opened.ok) return opened;
@@ -539,6 +595,11 @@ export async function executeSend(messageId) {
   const label = SEND_LABEL[msg.channel] || 'Send';
   const got = await getPage();
   if (!got.ok) return got;
+  if (msg.channel === 'email') {
+    await got.page.getByRole('button', { name: /^Send\b/ }).last()
+      .waitFor({ state: 'visible', timeout: 15000 })
+      .catch(() => {});
+  }
   const named = msg.channel === 'linkedin' || msg.channel === 'x'
     ? got.page.getByRole('button', { name: /^Send$/ })
     : got.page.getByRole('button', { name: label, exact: true });
@@ -554,6 +615,10 @@ export async function executeSend(messageId) {
   if (!button && msg.channel === 'x') {
     const reply = got.page.locator('[data-testid="tweetButtonInline"], [data-testid="tweetButton"]').last();
     if ((await reply.count()) && (await reply.isVisible().catch(() => false))) button = reply;
+  }
+  if (!button && msg.channel === 'email') {
+    const gmail = got.page.getByRole('button', { name: /^Send\b/ }).last();
+    if ((await gmail.count()) && (await gmail.isVisible().catch(() => false))) button = gmail;
   }
   if (!button) button = got.page.locator('.msg-form__send-button, button[aria-label="Send"]').last();
   try {

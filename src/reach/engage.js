@@ -8,7 +8,7 @@
 import { get, run } from '../kernel/db.js';
 import { adaptabilityOn, agentMode, fullPower } from '../kernel/desk.js';
 import { recordEvent } from '../kernel/events.js';
-import { clip } from '../kernel/text.js';
+import { clip, clipAtWord } from '../kernel/text.js';
 import { nowIso, startOfLocalDayIso } from '../kernel/time.js';
 import { pathLookup, pathRecord } from '../browser/paths.js';
 import { channelMode, sentToday } from './gate.js';
@@ -28,8 +28,7 @@ export const ENGAGEMENTS = [
 const HOLD_MS = 6 * 60 * 60 * 1000;
 
 const AD = /\b(we are hiring|we're hiring|we’re hiring|apply now|now hiring|i'm hiring|i am hiring|view job|is hiring|are you hiring)\b|#hiring|if you(?:'re|’re| are) (?:job hunting|looking|interviewing)|looking for your next|join our team|only connections can comment|job search strategist|career coach|i help professionals|helping professionals|job search expert|are you (?:still )?looking|provide food|feed my family|gofundme|mutual aid|difficult circumstances|you need me|u need me|on your sq(?:uad|aud)/i;
-const QUESTION = /^(how|what|when|why|who)\b/i;
-/** The author is the one hunting. A mention of jobs in advice to other people is not enough. */
+/** The author is the one hunting. A mention of jobs in advice to other people is not enough. A question is not a request for the tool. */
 const OWN = [
   /\bi(?:'m|’m| am)\s+open to work\b/i,
   /\bi(?:'m|’m| am| was| went)?\s+(?:been\s+|just\s+|still\s+|currently\s+)?looking for\s+(?:a\s+|my\s+|the\s+)?(?:[\w'#./+-]+\s+){0,6}(?:job|role|work)\b/i,
@@ -46,7 +45,7 @@ const OWN = [
 export function huntPost(text) {
   const raw = String(text || '').replace(/\s+/g, ' ').trim();
   if (!raw || AD.test(raw)) return false;
-  if (QUESTION.test(raw) && raw.includes('?')) return false;
+  if (raw.includes('?')) return false;
   return OWN.some((pattern) => pattern.test(raw));
 }
 
@@ -71,8 +70,8 @@ export function engagementLine(campaign) {
   const url = facts.match(/https?:\/\/\S+/)?.[0] || '';
   const sentence = facts.replace(url, '').split(/(?<=[.!?])\s/)[0].replace(/\s+/g, ' ').trim();
   const room = 240 - (url ? url.length + 1 : 0);
-  const core = clip(sentence || facts.replace(url, '').trim(), Math.max(24, room)).trim();
-  return clip(`${core}${url ? ` ${url}` : ''}`.replace(/\s+/g, ' ').trim(), 240);
+  const core = clipAtWord(sentence || facts.replace(url, '').trim(), Math.max(24, room));
+  return clipAtWord(`${core}${url ? ` ${url}` : ''}`.replace(/\s+/g, ' ').trim(), 240);
 }
 
 /** @param {string} id */
@@ -206,7 +205,7 @@ export function learnEngagement(step, result) {
   const detail = clip(result?.detail || code || 'No page matched.', 300);
   const xDmClosed = step.id === 'x-dm' && code === 'inbox_closed';
   let outcome = 'retry';
-  if (result?.ok || code === 'posted' || code === 'sent') outcome = 'reached';
+  if (result?.ok || code === 'posted' || code === 'sent' || code === 'duplicate') outcome = 'reached';
   else if (code === 'premium_wall' || code === 'login' || xDmClosed) outcome = 'stop';
   const recorded = pathRecord({
     site: step.site,
@@ -229,6 +228,8 @@ export function learnEngagement(step, result) {
     const current = get('SELECT result FROM strategies WHERE id = ?', step.id);
     recordStrategy(step.id, current?.result === 'worked' ? 'worked' : 'open', detail, 'agent');
   }
-  if (result?.ref && (result.clicked || xDmClosed)) rememberEngagement(result.ref, `${step.channel} ${step.action} ${detail}`);
+  if (result?.ref && (result.clicked || xDmClosed || code === 'duplicate')) {
+    rememberEngagement(result.ref, `${step.channel} ${step.action} ${detail}`);
+  }
   return { ok: recorded.ok, outcome };
 }

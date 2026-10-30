@@ -194,11 +194,34 @@ async function dismissPremium(page) {
  * @param {import('playwright-core').Page} page
  * @param {RegExp} proof
  */
+async function alreadySaid(page) {
+  const text = await page.locator('body').innerText({ timeout: 2000 }).catch(() => '');
+  return /you already said that/i.test(text);
+}
+
+/**
+ * @param {string} ref
+ * @param {string} handle
+ */
+function duplicateReply(ref, handle) {
+  if (handle) rememberEngagement(`x:reply:@${handle}`, 'X says this reply was already posted.');
+  return {
+    ok: true,
+    code: 'duplicate',
+    detail: 'X says this reply was already posted. Do not post it again.',
+    ref,
+    clicked: true,
+  };
+}
+
 async function waitForProof(page, proof) {
   const started = Date.now();
   let after = await proofText(page);
   while (Date.now() - started < 8000) {
     const blob = `${after.title || ''}\n${after.excerpt || ''}`;
+    if (/you already said that/i.test(blob)) {
+      return { ok: true, code: 'duplicate', detail: 'X says this reply was already posted. Do not post it again.' };
+    }
     if (proof.test(blob)) return { ok: true, code: 'posted', detail: clip(blob, 180) };
     if (after.blocker === 'captcha' || after.blocker === 'login') {
       return stopIfWall(page, after.blocker, after.url, after.excerpt);
@@ -274,7 +297,7 @@ async function chooseTweet(page, line, kind) {
     if (own && info.handle === own) continue;
     if (!huntPost(info.text) || alreadyOurOffer(info.text, line)) continue;
     const ref = kind === 'reply' ? `x:reply:${info.status}` : `x:dm:${info.handle}`;
-    if (alreadyEngaged(ref)) continue;
+    if (alreadyEngaged(ref) || (kind === 'reply' && alreadyEngaged(`x:reply:@${info.handle}`))) continue;
     return { article, ...info, ref };
   }
   return null;
@@ -293,15 +316,21 @@ async function replyOnX(line) {
   const clicked = await safeClick(reply);
   if (!clicked.ok) return clicked;
   await opened.page.waitForSelector('[data-testid="tweetTextarea_0"]', { timeout: 10000 }).catch(() => {});
+  if (await alreadySaid(opened.page)) return duplicateReply(picked.ref, picked.handle);
+  const dialog = await opened.page.locator('[role="dialog"]').innerText().catch(() => '');
+  if (alreadyOurOffer(dialog, line)) return duplicateReply(picked.ref, picked.handle);
   const box = await visible(opened.page, '[role="dialog"] [data-testid="tweetTextarea_0"], [data-testid="tweetTextarea_0"]');
   if (!box) return { ok: false, code: 'no_composer', detail: `The reply box did not open. ${opened.page.url()}` };
   const typed = await fillBox(opened.page, box, line);
   if (!typed.ok) return { ok: false, code: 'composer_empty', detail: 'The reply is not in the box. Reply was not clicked.' };
+  if (await alreadySaid(opened.page)) return duplicateReply(picked.ref, picked.handle);
   const button = opened.page.locator('[data-testid="tweetButton"]').last();
   const sent = await safeClick(button);
   if (!sent.ok) return sent;
   const confirmed = await waitForProof(opened.page, /your (post|reply) was sent/i);
-  return { ...confirmed, ref: picked.ref, clicked: true };
+  if (confirmed.code === 'duplicate' || await alreadySaid(opened.page)) return duplicateReply(picked.ref, picked.handle);
+  if (confirmed.ok && picked.handle) rememberEngagement(`x:reply:@${picked.handle}`, 'Replied once.');
+  return { ...confirmed, ref: picked.ref, clicked: Boolean(confirmed.ok) };
 }
 
 /**
