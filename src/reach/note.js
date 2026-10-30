@@ -8,7 +8,7 @@
 import { get, run } from '../kernel/db.js';
 import { fullPower, agentMode } from '../kernel/desk.js';
 import { nowIso } from '../kernel/time.js';
-import { clip } from '../kernel/text.js';
+import { clip, clipAtWord } from '../kernel/text.js';
 import { activeCampaign, campaignChannels } from '../gtm/campaigns.js';
 import { qualifiedWithoutMessage } from '../discover/leads.js';
 import { getBusiness } from '../understand/profile.js';
@@ -53,15 +53,6 @@ export function noteFor(input) {
   const room = 200 - hello.length - (tail ? tail.length + 1 : 0);
   const line = clipAtWord(sentence || facts, Math.max(24, room));
   return clip(`${hello}${line}${tail ? ` ${tail}` : ''}`.replace(/\s+/g, ' ').trim(), 200);
-}
-
-/** Cut on a space so a short note does not end in the middle of a word. */
-function clipAtWord(value, max) {
-  const full = String(value ?? '').trim();
-  if (full.length <= max) return full;
-  const cut = clip(full, max);
-  const space = cut.lastIndexOf(' ');
-  return (space > 24 ? cut.slice(0, space) : cut).trim();
 }
 
 /**

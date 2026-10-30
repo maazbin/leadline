@@ -1,7 +1,7 @@
 // src/kernel/harness.js — the master loop. One process, one send, then a gap.
 //
 // Owns: the timer that keeps a Run desk moving, and the crew review on that timer.
-// Must not: start when Run is off, send when Reach is off, or do a second browser write in one tick.
+// Must not: start when Run is off, send when Reach is off, or run a second tick while one is still going.
 // When Full power is on, one tick may write the next note, publish one post, post one trial,
 // or try one reply, comment, or DM.
 // Must not: solve a captcha. execute_send already stops on one.
@@ -38,6 +38,7 @@ const GAPS = {
 
 /** @type {ReturnType<typeof setInterval> | null} */
 let timer = null;
+let busy = false;
 
 function paced() {
   const row = get("SELECT value FROM app_meta WHERE key = 'next_send_at'");
@@ -72,15 +73,18 @@ function masterPass() {
 
 /** One step. Safe to call when the desk is stopped. Trace records a stall after the step. */
 export async function tick() {
+  if (busy) return { ok: true, code: 'busy' };
+  busy = true;
   try {
     const result = await tickOnce();
-    if (result && !['stopped', 'pacing', 'idle', 'waiting', 'reach_off'].includes(result.code)) {
+    if (result && !['stopped', 'pacing', 'idle', 'waiting', 'reach_off', 'busy'].includes(result.code)) {
       const detail = result.detail ? `: ${result.detail}` : '';
       console.log(`Leadline ${result.code}${detail}`);
     }
     return result;
   } finally {
     masterPass();
+    busy = false;
   }
 }
 

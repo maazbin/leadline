@@ -13,6 +13,15 @@ export function clip(value, max) {
   return s.length <= max ? s : s.slice(0, max);
 }
 
+/** Cut on a space so a short line does not end in the middle of a word. */
+export function clipAtWord(value, max) {
+  const full = String(value ?? '').trim();
+  if (full.length <= max) return full;
+  const cut = clip(full, max);
+  const space = cut.lastIndexOf(' ');
+  return (space > 24 ? cut.slice(0, space) : cut).trim();
+}
+
 /**
  * @param {unknown} value
  * @returns {string} Safe to place in HTML text or an attribute.
