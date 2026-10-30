@@ -2,13 +2,15 @@
 //
 // Owns: the browser half of the six engagement steps.
 // Must not: start a Premium trial, click Redeem or Retry, or submit an empty box.
+// Must not: click Not Now, or type an X Number. That screen means the DM cannot be sent.
 // Must not: reply to our own post, or to a post this desk already answered.
 // The words have to be in the box before Reply, Comment, Post, or Send.
 
 import { clip } from '../kernel/text.js';
-import { alreadyEngaged, alreadyOurOffer, huntPost } from '../reach/engage.js';
+import { alreadyEngaged, alreadyOurOffer, huntPost, rememberEngagement } from '../reach/engage.js';
 import { channelHeld } from '../reach/note.js';
-import { bodyOnPage } from './act.js';
+import { bodyOnPage, xInboxClosedText } from './act.js';
+import { pathRecord } from './paths.js';
 import { classifyBlocker } from './blockers.js';
 import { recordEncounter } from './encounters.js';
 import { freshPage, pace } from './session.js';
@@ -55,6 +57,9 @@ async function safeClick(locator) {
   ).replace(/\s+/g, ' ').trim()).catch(() => '');
   if (TRIAL.test(name)) {
     return { ok: false, code: 'premium_wall', detail: 'A Premium button was on the page. It was not clicked.' };
+  }
+  if (/^not now$/i.test(name) || /x number/i.test(name)) {
+    return { ok: false, code: 'no_composer', detail: 'X showed Not Now or an X Number. This person cannot be DM\'d.' };
   }
   try {
     const tag = await locator.evaluate((node) => node.tagName).catch(() => '');
@@ -342,11 +347,37 @@ async function dmOnX(line) {
     const message = (await direct.count()) ? direct : named;
     if (!(await message.count()) || !(await message.isVisible().catch(() => false))) {
       last = `No Message button on @${person.handle}.`;
+      rememberEngagement(person.ref, last);
       continue;
     }
     const openedMessage = await safeClick(message);
     if (!openedMessage.ok) return { ...openedMessage, detail: `@${person.handle}. ${openedMessage.detail || ''}` };
     await pace();
+    const closedText = await profile.page.evaluate(() => {
+      const bits = [];
+      for (const el of document.querySelectorAll('span, button, label, h1, h2, p')) {
+        const raw = (el.innerText || '').replace(/\s+/g, ' ').trim();
+        if (!raw || raw.length > 60) continue;
+        const box = el.getBoundingClientRect();
+        if (box.width < 1 || box.height < 1) continue;
+        bits.push(raw);
+      }
+      return bits.join('\n');
+    }).catch(() => '');
+    if (xInboxClosedText(closedText)) {
+      pathRecord({
+        site: 'x.com',
+        fromNode: 'dm',
+        choice: 'not now or x number',
+        toNode: 'closed',
+        outcome: 'stop',
+        see: 'Not Now or an X Number is on the chat.',
+        note: 'This person cannot be DM\'d. Do not click Not Now. Do not type a number.',
+      });
+      last = `@${person.handle} cannot be DM'd. X showed Not Now or an X Number.`;
+      rememberEngagement(person.ref, last);
+      continue;
+    }
     const box = profile.page.locator('[data-testid="dmComposerTextInput"], [role="dialog"] [role="textbox"]').last();
     await profile.page.waitForURL(/\/messages|\/chat\/pin/, { timeout: 15000 }).catch(() => {});
     const landed = `${profile.page.url()}\n${await profile.page.evaluate(() => (document.body?.innerText || '').slice(0, 300)).catch(() => '')}`;
@@ -358,6 +389,7 @@ async function dmOnX(line) {
     } catch {
       const excerpt = await profile.page.evaluate(() => (document.body?.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 180)).catch(() => '');
       last = `The X message box did not open for @${person.handle}. ${profile.page.url()} ${excerpt}`;
+      rememberEngagement(person.ref, last);
       continue;
     }
     const typed = await fillBox(profile.page, box, line);
@@ -380,7 +412,11 @@ async function dmOnX(line) {
     }
     return { ...confirmed, ref: person.ref, clicked: true, detail: `@${person.handle}. ${confirmed.detail || ''}` };
   }
-  return { ok: false, code: 'no_composer', detail: last };
+  return {
+    ok: false,
+    code: 'inbox_closed',
+    detail: `${last} X DMs are mostly closed. Try another platform.`,
+  };
 }
 
 const LINKEDIN_SEARCH = `https://www.linkedin.com/search/results/content/?keywords=${encodeURIComponent('"looking for a job"')}&origin=GLOBAL_SEARCH_HEADER`;

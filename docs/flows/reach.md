@@ -15,7 +15,7 @@ One message has status `sent`, or it is waiting on the person, or it was cancell
 5. If `next_action` says `execute_send`, call it for that id only.
 6. On `captcha` or `login`, `record_encounter` and stop.
 7. When a follow-up is due and empty, `schedule_followup` with the body. Then it waits like any other draft. Full power still does not ask for an approval on that follow-up.
-8. With Full power on, after the note, the post, and the community look, the desk tries one learned step: a reply on X, a comment on LinkedIn or Instagram, or a DM on X, LinkedIn, or Instagram. The words are the campaign's first sentence and its link. It tries each step that is still open before it repeats one that worked. It skips a step marked failed or wrong, a path marked stop or refused, and a DM while that channel is held. A captcha, or an X chat passcode, holds the step. A login or a Premium wall fails it. Nothing starts a trial, and the passcode is never typed.
+8. With Full power on, after the note, the post, and the community look, the desk tries one learned step: a reply on X, a comment on LinkedIn or Instagram, or a DM on X, LinkedIn, or Instagram. The words are the campaign's first sentence and its link. It tries each step that is still open before it repeats one that worked. It skips a step marked failed or wrong, a path marked stop or refused, and a DM while that channel is held. A captcha, or an X chat passcode, holds the step. A login or a Premium wall fails it. An X inbox that shows Not Now, an X Number, or no message box is remembered, the X DM step fails, and the next try is another platform. Nothing starts a trial, and the passcode is never typed.
 
 A reply uses `set_lead_outcome`. That cancels open messages.
 
