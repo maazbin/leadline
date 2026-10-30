@@ -4,6 +4,7 @@
 // Must not: click Send except from execute_send, and only after canSend.
 // Must not: click Post except from publishPost, and only after the words are in the box.
 // Must not: type or click on a captcha or a login wall.
+// Must not: click Not Now, or type an X Number. That screen means the DM cannot be sent.
 // Writes: messages, when a real click succeeds, through markSent.
 
 import { clip } from '../kernel/text.js';
@@ -20,6 +21,7 @@ import { markSent } from '../reach/messages.js';
 import { getMessage } from '../reach/rows.js';
 import { recordStall } from '../trace/stalls.js';
 import { isSendControl } from './blockers.js';
+import { pathRecord } from './paths.js';
 import { recordEncounter } from './encounters.js';
 import { getPage, pace, snapshot } from './session.js';
 
@@ -298,16 +300,75 @@ async function typeLinkedInNote(page, body) {
  * @param {import('playwright-core').Page} page
  * @param {string} body
  */
+/**
+ * X Chat shows Not Now, or asks for an X Number, when this person cannot be DM'd.
+ * @param {string} text
+ */
+export function xInboxClosedText(text) {
+  const lines = String(text || '').split('\n').map((line) => line.trim()).filter(Boolean);
+  return lines.some((line) => /^not now$/i.test(line) || /x number/i.test(line));
+}
+
+/**
+ * @param {import('playwright-core').Page} page
+ */
+async function xInboxClosed(page) {
+  const text = await page.evaluate(() => {
+    const bits = [];
+    for (const el of document.querySelectorAll('span, button, label, h1, h2, p')) {
+      const raw = (el.innerText || '').replace(/\s+/g, ' ').trim();
+      if (!raw || raw.length > 60) continue;
+      const box = el.getBoundingClientRect();
+      if (box.width < 1 || box.height < 1) continue;
+      bits.push(raw);
+    }
+    return bits.join('\n');
+  }).catch(() => '');
+  return xInboxClosedText(text);
+}
+
+function rememberClosedInbox() {
+  pathRecord({
+    site: 'x.com',
+    fromNode: 'dm',
+    choice: 'not now or x number',
+    toNode: 'closed',
+    outcome: 'stop',
+    see: 'Not Now or an X Number is on the chat.',
+    note: 'This person cannot be DM\'d. Do not click Not Now. Do not type a number.',
+  });
+}
+
 async function typeXNote(page, body) {
-  const message = page.getByRole('button', { name: /^Message\b/ }).first();
-  if (!(await message.count()) || !(await message.isVisible().catch(() => false))) {
-    return { ok: false, code: 'no_composer', detail: 'No Message button on this profile.' };
+  if (await xInboxClosed(page)) {
+    rememberClosedInbox();
+    return { ok: false, code: 'no_composer', detail: 'X showed Not Now or an X Number. This person cannot be DM\'d. Nothing was typed.' };
   }
-  await message.click({ timeout: 8000 });
-  await pace();
-  const box = page.locator('[data-testid="dmComposerTextInput"], [role="dialog"] [role="textbox"]').last();
-  if (!(await box.count())) return { ok: false, code: 'no_composer', detail: 'The X message box did not open.' };
-  return fillBox(page, box, body);
+  const message = page.getByRole('button', { name: /^Message\b/ }).first();
+  if ((await message.count()) && (await message.isVisible().catch(() => false))) {
+    await message.click({ timeout: 8000 });
+    await pace();
+    if (await xInboxClosed(page)) {
+      rememberClosedInbox();
+      return { ok: false, code: 'no_composer', detail: 'X showed Not Now or an X Number. This person cannot be DM\'d. Nothing was typed.' };
+    }
+    const box = page.locator('[data-testid="dmComposerTextInput"], [role="dialog"] [role="textbox"]').last();
+    if (!(await box.count())) return { ok: false, code: 'no_composer', detail: 'The X message box did not open.' };
+    return fillBox(page, box, body);
+  }
+  const replyBox = page.locator('[data-testid="tweetTextarea_0"]');
+  try {
+    await replyBox.first().waitFor({ state: 'visible', timeout: 8000 });
+  } catch {
+    const open = page.locator('[data-testid="reply"]').first();
+    if (await open.isVisible().catch(() => false)) {
+      await open.click({ timeout: 8000 });
+      await pace();
+    }
+  }
+  const reply = page.locator('[data-testid="tweetTextarea_0"]').last();
+  if (await reply.isVisible().catch(() => false)) return fillBox(page, reply, body);
+  return { ok: false, code: 'no_composer', detail: 'No Message button and no reply box on this page.' };
 }
 
 /**
@@ -489,6 +550,10 @@ export async function executeSend(messageId) {
       button = candidate;
       break;
     }
+  }
+  if (!button && msg.channel === 'x') {
+    const reply = got.page.locator('[data-testid="tweetButtonInline"], [data-testid="tweetButton"]').last();
+    if ((await reply.count()) && (await reply.isVisible().catch(() => false))) button = reply;
   }
   if (!button) button = got.page.locator('.msg-form__send-button, button[aria-label="Send"]').last();
   try {

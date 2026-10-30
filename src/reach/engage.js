@@ -194,7 +194,8 @@ export function nextEngagement() {
 }
 
 /**
- * Record the path and the strategy for one try. A miss stays open. A Premium wall or a login fails the step.
+ * Record the path and the strategy for one try. A miss stays open.
+ * A Premium wall, a login, or a closed X inbox fails that step.
  * @param {{ id: string, action: string, site: string, channel: string }} step
  * @param {{ ok?: boolean, code?: string, detail?: string, ref?: string, clicked?: boolean, hold?: boolean }} result
  */
@@ -203,9 +204,10 @@ export function learnEngagement(step, result) {
   const code = String(result?.code || '');
   if (code === 'browser_disabled' || code === 'held') return { ok: true, outcome: 'retry', skipped: true };
   const detail = clip(result?.detail || code || 'No page matched.', 300);
+  const xDmClosed = step.id === 'x-dm' && code === 'inbox_closed';
   let outcome = 'retry';
   if (result?.ok || code === 'posted' || code === 'sent') outcome = 'reached';
-  else if (code === 'premium_wall' || code === 'login') outcome = 'stop';
+  else if (code === 'premium_wall' || code === 'login' || xDmClosed) outcome = 'stop';
   const recorded = pathRecord({
     site: step.site,
     fromNode: 'feed',
@@ -215,8 +217,8 @@ export function learnEngagement(step, result) {
     see: detail,
     note: detail,
   });
-  if (code === 'premium_wall' || code === 'login') {
-    holdEngagement(step.id);
+  if (code === 'premium_wall' || code === 'login' || xDmClosed) {
+    if (!xDmClosed) holdEngagement(step.id);
     recordStrategy(step.id, 'failed', detail, 'agent');
     if (code === 'premium_wall') holdChannel(step.channel);
   } else if (code === 'captcha' || result?.hold) {
@@ -227,6 +229,6 @@ export function learnEngagement(step, result) {
     const current = get('SELECT result FROM strategies WHERE id = ?', step.id);
     recordStrategy(step.id, current?.result === 'worked' ? 'worked' : 'open', detail, 'agent');
   }
-  if (result?.ref && result.clicked) rememberEngagement(result.ref, `${step.channel} ${step.action} ${detail}`);
+  if (result?.ref && (result.clicked || xDmClosed)) rememberEngagement(result.ref, `${step.channel} ${step.action} ${detail}`);
   return { ok: recorded.ok, outcome };
 }

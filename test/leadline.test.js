@@ -525,6 +525,13 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.equal(nextEngagement().id, 'li-comment');
     assert.equal(learnEngagement(nextEngagement(), { ok: false, code: 'none', detail: 'No post matched.' }).outcome, 'retry');
     assert.equal(nextEngagement().id, 'ig-comment');
+    const closedDm = learnEngagement(
+      { id: 'x-dm', action: 'dm', site: 'x.com', channel: 'x' },
+      { ok: false, code: 'inbox_closed', detail: 'Not Now or an X Number. X DMs are mostly closed.', ref: 'x:dm:closed-example' },
+    );
+    assert.equal(closedDm.outcome, 'stop');
+    assert.equal(listStrategies().find((row) => row.id === 'x-dm').result, 'failed');
+    assert.equal(nextEngagement().id, 'ig-comment');
     for (const channel of ['x', 'linkedin', 'instagram']) {
       assert.equal(setChannelMode(channel, 'draft', 5, 'person').ok, true);
     }
@@ -608,7 +615,7 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     const { agentMode } = await import('../src/kernel/desk.js');
     const { saveContent, setContentStatus, listContent } = await import('../src/create/drafts.js');
     const { markDeskPublished, nextPublishable } = await import('../src/create/publish.js');
-    const { publishPost, bodyOnPage } = await import('../src/browser/act.js');
+    const { publishPost, bodyOnPage, xInboxClosedText } = await import('../src/browser/act.js');
     const { shorterHook } = await import('../src/virality/try.js');
     const { extractCommunityLinks, communityLooksRelevant } = await import('../src/discover/communities.js');
     assert.equal(saveDesk({ running: 1, full_power: 0, adaptability: 1 }, 'person').ok, true);
@@ -627,8 +634,20 @@ test('gate, memory, and the control plane', { timeout: 90000 }, async () => {
     assert.match(sample, /github\.com\/maazbin\/jobpilot/);
     assert.doesNotMatch(sample, /1500/);
     assert.ok(sample.length <= 200);
+    const longNote = noteFor({
+      name: 'Kartikey',
+      offer: 'JobPilot is an MIT-licensed MCP server that turns your coding agent into a job hunter: it drives your logged-in Chrome to apply via email, LinkedIn Easy Apply, ATS forms, and connections.',
+      goal: 'https://github.com/maazbin/jobpilot',
+      sender: 'Maaz Bin Mustaqeem',
+    });
+    assert.ok(longNote.length <= 200);
+    assert.match(longNote, /github\.com\/maazbin\/jobpilot/);
+    assert.doesNotMatch(longNote, /ema https/);
     assert.equal(bodyOnPage(sample, sample), true);
     assert.equal(bodyOnPage('Sign in', sample), false);
+    assert.equal(xInboxClosedText('Not Now'), true);
+    assert.equal(xInboxClosedText('Enter their X Number'), true);
+    assert.equal(xInboxClosedText('Reply\n2'), false);
     const made = saveContent({
       campaignId: campaign.id,
       channel: 'x',

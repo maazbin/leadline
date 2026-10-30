@@ -51,8 +51,17 @@ export function noteFor(input) {
   const tail = [url, sign].filter(Boolean).join(' ');
   const hello = who ? `${who}, ` : '';
   const room = 200 - hello.length - (tail ? tail.length + 1 : 0);
-  const line = clip(sentence || facts, Math.max(24, room)).trim();
+  const line = clipAtWord(sentence || facts, Math.max(24, room));
   return clip(`${hello}${line}${tail ? ` ${tail}` : ''}`.replace(/\s+/g, ' ').trim(), 200);
+}
+
+/** Cut on a space so a short note does not end in the middle of a word. */
+function clipAtWord(value, max) {
+  const full = String(value ?? '').trim();
+  if (full.length <= max) return full;
+  const cut = clip(full, max);
+  const space = cut.lastIndexOf(' ');
+  return (space > 24 ? cut.slice(0, space) : cut).trim();
 }
 
 /**
